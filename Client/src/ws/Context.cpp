@@ -22,9 +22,9 @@ fys::ws::Context::Context(fys::ws::Context &&other) noexcept :
 
 fys::ws::Context::Context(const int ac, const char *const *av) {
     try {
-        TCLAP::CmdLine cli("WorldServer of Fys World Server Game", ' ', "1.0");
-        TCLAP::ValueArg<std::string> configPath("c", "config", "Path of config file", false, "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Server/resource/worldserver.ini", "string");
-        TCLAP::ValueArg<std::string> map("m", "map", "Main map managed by the server", false, "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Server/resource/tmx_maps/map.tmx", "string");
+        TCLAP::CmdLine cli("WorldServer of Fys World Client Game", ' ', "1.0");
+        TCLAP::ValueArg<std::string> configPath("c", "config", "Path of config file", false, "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Client/resource/worldserver.ini", "string");
+        TCLAP::ValueArg<std::string> map("m", "map", "Main map managed by the server", false, "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Client/resource/tmx_maps/map.tmx", "string");
         TCLAP::ValueArg<ushort> changePort("p", "port", "Listening Port", false, 0, "integer");
         TCLAP::ValueArg<ushort> changeGtwPort("s", "gport", "Listening Port for Gateway", false, 0, "integer");
         TCLAP::ValueArg<ushort> changeGtwIp("g", "gip", "IP of Gateway", false, 0, "string");
