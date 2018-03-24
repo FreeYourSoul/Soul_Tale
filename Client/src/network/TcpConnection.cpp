@@ -6,7 +6,7 @@
 #include <boost/asio.hpp>
 #include <FySMessage.pb.h>
 #include <FysBus.hh>
-#include <WorldServer.hh>
+#include <Game.hh>
 #include "TcpConnection.hh"
 
 fys::network::TcpConnection::TcpConnection(boost::asio::io_service& io_service) : _isShuttingDown(false), _socket(io_service) {
@@ -31,7 +31,7 @@ void fys::network::TcpConnection::send(google::protobuf::Message&& msg) {
     );
 }
 
-void fys::network::TcpConnection::readOnSocket(fys::mq::FysBus<pb::FySMessage, ws::BUS_QUEUES_SIZE>::ptr &fysBus) {
+void fys::network::TcpConnection::readOnSocket(fys::mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>::ptr &fysBus) {
     std::memset(_buffer, 0, MESSAGE_BUFFER_SIZE);
     _socket.async_read_some(boost::asio::buffer(_buffer, MESSAGE_BUFFER_SIZE),
                              [this, fysBus](boost::system::error_code ec, const std::size_t byteTransferred) {
@@ -40,7 +40,7 @@ void fys::network::TcpConnection::readOnSocket(fys::mq::FysBus<pb::FySMessage, w
 }
 
 void fys::network::TcpConnection::handleRead(const boost::system::error_code &error, const size_t bytesTransferred,
-                                             fys::mq::FysBus<pb::FySMessage, ws::BUS_QUEUES_SIZE>::ptr fysBus) {
+                                             fys::mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>::ptr fysBus) {
     if (!((boost::asio::error::eof == error) || (boost::asio::error::connection_reset == error)) && !_isShuttingDown) {
         mq::QueueContainer<pb::FySMessage> containerMsg;
         pb::FySMessage message;

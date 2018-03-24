@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package fys.pb;
+
+message LoginMessage {
+
+    enum Type {
+        // Client Authentication
+        LoginGameServer = 0;
+        LoginAuthServer = 1;
+
+        // Client Authentication
+        LoginPlayerOnGateway = 2;
+        LoginPlayerOnGame = 3;
+
+        Acknowledge = 4;
+
+        NotifyNewPlayer = 5;
+        NotifyNewServer = 6;
+    }
+
+    Type typeMessage = 1;
+    google.protobuf.Any content = 2;
+
+    string user = 3;
+}
+
+//
+// Message to do the initial connection to the Main Client
+//
+message LoginGameServer {
+
+    string magicPassword = 1;
+    string portForPlayer = 2;
+    bool isWorldServer = 3;
+
+}
+
+message LoginPlayerOnGateway {
+
+    string password = 1;
+}
+
+message LogingPlayerOnGame {
+
+    bytes tokenGameServer = 1;
+    
+}
+
+message NotifyPlayerIncoming {
+
+    string ip = 1;
+    bytes token = 3;
+
+}
+
+message NotifyServerIncoming {
+
+    string ip = 1;
+    string port = 2;
+    string positionId = 3;
+    bytes token = 4;
+
+}

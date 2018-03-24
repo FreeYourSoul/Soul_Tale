@@ -42,7 +42,7 @@ namespace fys::network {
 
         boost::asio::ip::tcp::socket& getSocket();
 
-        void readOnSocket(std::shared_ptr<mq::FysBus<pb::FySMessage, ws::BUS_QUEUES_SIZE>> &fysBus);
+        void readOnSocket(std::shared_ptr<mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>> &fysBus);
         void send(google::protobuf::Message&& msg);
 
         void setCustomShutdownHandler(const std::function<void()> &customShutdownHandler);
@@ -66,7 +66,7 @@ namespace fys::network {
         void shuttingConnectionDown();
 
         void handleRead(const boost::system::error_code &error, size_t bytesTransferred,
-                        std::shared_ptr<mq::FysBus<pb::FySMessage, ws::BUS_QUEUES_SIZE>>);
+                        std::shared_ptr<mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>>);
 
     private:
         bool _isShuttingDown;

@@ -26,11 +26,12 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/FySMQ/include/queue
         ${CMAKE_SOURCE_DIR}/FySMQ/include/bus
         ${CMAKE_SOURCE_DIR}/FySMemoryManager/include
-        ${CMAKE_SOURCE_DIR}/Client/include/ws
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/listener
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/tmx
+        ${CMAKE_SOURCE_DIR}/Client/include/cl
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/listener
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/tmx
         ${CMAKE_SOURCE_DIR}/Client/include/network
-        ${CMAKE_SOURCE_DIR}/Client/include/game Utils/src)
+        ${CMAKE_SOURCE_DIR}/Client/include/game
+        ${CMAKE_SOURCE_DIR}/Utils/src)
 
 set(SOURCE_FILES_MM)
 
@@ -42,35 +43,20 @@ set(SOURCE_FILES_MQ
         ${CMAKE_SOURCE_DIR}/FySMQ/include/bus/FysBus.hh)
 
 set(SOURCE_FILES_SRV
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/listener/Authenticator.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/listener/Authenticator.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/listener/GamingListener.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/listener/GamingListener.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/WorldServer.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/WorldServer.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/Context.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/Context.hh
+        ${CMAKE_SOURCE_DIR}/Client/src/cl/listener/GamingListener.cpp
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/listener/GamingListener.hh
+        ${CMAKE_SOURCE_DIR}/Client/src/cl/Context.cpp
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/Context.hh
         ${CMAKE_SOURCE_DIR}/Client/src/network/SessionManager.cpp
         ${CMAKE_SOURCE_DIR}/Client/include/network/SessionManager.hh
         ${CMAKE_SOURCE_DIR}/Client/src/network/TcpConnection.cpp
         ${CMAKE_SOURCE_DIR}/Client/include/network/TcpConnection.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/GameServerInstance.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/GameServerInstance.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/tmx/MapBuilder.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/tmx/MapBuilder.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/tmx/Map.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/tmx/Map.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/network/ClusterManager.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/network/ClusterManager.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/network/PlayerManager.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/network/PlayerManager.hh
-        ${CMAKE_SOURCE_DIR}/Client/src/ws/WorldEngine.cpp
-        ${CMAKE_SOURCE_DIR}/Client/include/ws/WorldEngine.hh)
+        ${CMAKE_SOURCE_DIR}/Client/src/cl/tmx/MapBuilder.cpp
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/tmx/MapBuilder.hh
+        ${CMAKE_SOURCE_DIR}/Client/src/cl/tmx/Map.cpp
+        ${CMAKE_SOURCE_DIR}/Client/include/cl/tmx/Map.hh)
 
 set(SOURCE_FILES_UTILS
-        ${CMAKE_SOURCE_DIR}/Utils/src/CheckVars.hh
-        ${CMAKE_SOURCE_DIR}/Utils/src/TokenGenerator.cpp
-        ${CMAKE_SOURCE_DIR}/Utils/src/TokenGenerator.hh
         ${CMAKE_SOURCE_DIR}/Utils/src/PlayerDataType.hh)
 
 set(SOURCE_FILES_ALL

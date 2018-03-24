@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package fys.pb;
+
+message FySBabbleMessage {
+
+    string token = 1; // used as authentication key
+    BabbleMessageContent content = 2;
+    bool isWhisper = 3;
+}
+
+message FySBabbleResponse {
+
+    ErrorResponse error = 1;
+    BabbleMessageContent content = 2;
+
+}
+
+message BabbleMessageContent {
+
+    string origin = 1;
+    string dest = 2;
+    string message = 3;
+
+}
+
+message ErrorResponse {
+
+    enum ErrorType {
+        INTERNAL_ERROR = 0;
+        BAD_REQUEST = 1;
+        FORBIDDEN = 3;
+        NOT_FOUND = 4;
+        TIME_OUT = 5 ;
+    }
+
+    ErrorType erroCode = 1;
+    string errorServer = 2;
+    string errorContent = 3;
+
+}
