@@ -12,6 +12,7 @@
 #include <FySAuthenticationLoginMessage.pb.h>
 #include <FySMessage.pb.h>
 #include <FySPlayerInteraction.pb.h>
+#include <google/protobuf/util/time_util.h>
 
 fys::cl::Game::Game(boost::asio::io_service &ios, const fys::cl::Context &ctx) :
         _spriteMemPool(std::make_unique<SpriteMemoryPool>(MEMORY_POOL_SIZE)),
@@ -122,25 +123,29 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
             }
         }
         else if (event.type == sf::Event::KeyReleased) {
-
+            sendMovingState(0.0, true);
         }
     }
 }
 
 void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
+    google::protobuf::Timestamp *timestamp = new google::protobuf::Timestamp();
     fys::pb::FySMessage msg;
     fys::pb::PlayerInteract piMsg;
+    fys::pb::PlayerMove moveMsg;
 
+    moveMsg.set_angle(moveAngle);
     msg.set_type(fys::pb::PLAYER_INTERACTION);
+    timestamp->set_seconds(time(nullptr));
+    timestamp->set_nanos(0);
     piMsg.set_token(_token);
+    piMsg.set_allocated_time(timestamp);
+    piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_OFF);
     if (!stop) {
-        fys::pb::PlayerMove moveMsg;
-        moveMsg.set_angle(moveAngle);
         piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_ON);
         piMsg.mutable_content()->PackFrom(moveMsg);
     }
-    else
-        piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_OFF);
+
     msg.mutable_content()->PackFrom(piMsg);
     _serverConnection->send(std::move(msg));
 }
