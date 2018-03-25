@@ -71,7 +71,7 @@ set(SOURCE_FILES_ALL
 
 set(SOURCE_FILES
         ${SOURCE_FILES_ALL}
-        ${CMAKE_SOURCE_DIR}/Client/src/main.cpp)
+        ${CMAKE_SOURCE_DIR}/Client/src/main.cpp Client/src/cl/tmx/GameRenderer.cpp Client/include/cl/tmx/GameRenderer.hh)
 
 ### Client ###
 add_executable(FreeSouls_Client ${SOURCE_FILES})

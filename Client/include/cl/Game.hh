@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <boost/asio/io_service.hpp>
+#include <SFML/Graphics.hpp>
 
 namespace fys {
     namespace cl {
@@ -56,6 +57,7 @@ namespace fys::cl {
         std::shared_ptr<network::TcpConnection> _serverConnection;
         std::string _token;
 
+        void consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSourceSprite, sf::Sprite &sprite);
     };
 
 }

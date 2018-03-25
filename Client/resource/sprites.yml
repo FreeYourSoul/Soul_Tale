@@ -1,0 +1,16 @@
+- main:
+    sprite_sheet: "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Server/resource/sprites/main.png",
+    char1:
+        down:   {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        up:     {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        right:  {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        left:   {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+
+
+- npc:
+    sprite_sheet: "/home/FyS/ClionProjects/FreeYourSoul_WorldServer/Server/resource/sprites/npc.png",
+    char1:
+        down: {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        up: {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        right: {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}
+        left: {nb_in_animation: 3, sprite_duration: [75, 75, 75], x: 0, y: 0}

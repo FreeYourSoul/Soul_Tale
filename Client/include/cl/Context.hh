@@ -21,6 +21,11 @@ namespace fys::cl {
 
     class Context {
 
+        struct Sprite {
+            std::string name;
+            std::string spriteSheetPath;
+        };
+
     public:
         ~Context() = default;
         Context(const int ac, const char *const *av);
@@ -63,6 +68,8 @@ namespace fys::cl {
         bool _verbose;
 
         std::string _tmxFileMapName;
+        std::list<Context::Sprite> _spritesCtx;
+
     };
 
 }

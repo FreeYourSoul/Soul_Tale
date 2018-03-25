@@ -81,26 +81,12 @@ void fys::cl::Game::runGamingLoop() {
         texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/perso3tile.png");
         sf::IntRect rectSourceSprite(0, 0, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
-        sf::Clock clock;
-        sf::Clock clockSprite;
+
 
         while (window.isOpen()) {
-            sf::Event event;
-            float delta = clock.restart().asSeconds();
-            while (window.pollEvent(event)) {
-                if (event.type == sf::Event::KeyPressed ) {
-                    if (event.key.code == sf::Keyboard::A)
-                        window.close();
-                    else if (event.key.code == sf::Keyboard::S) {
-                        float t = clockSprite.getElapsedTime().asMilliseconds();
-                        if (t >= 150) {
-                            rectSourceSprite.left = (rectSourceSprite.left >= (35 * 2) ? 0 : rectSourceSprite.left + 35);
-                            clockSprite.restart();
-                        }
-                        sprite.move(0, 175 * delta);
-                    }
-                }
-            }
+
+            consumeEvent(window, rectSourceSprite, sprite);
+
             sprite.setTextureRect(rectSourceSprite);
             window.clear(sf::Color::Black);
             window.draw(baseLayer);
@@ -112,6 +98,28 @@ void fys::cl::Game::runGamingLoop() {
         }
     });
     thread.join();
+}
+
+void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSourceSprite, sf::Sprite &sprite) {
+    static sf::Clock clock;
+    static sf::Clock clockSprite;
+
+    sf::Event event;
+    float delta = clock.restart().asSeconds();
+    while (window.pollEvent(event)) {
+        if (event.type == sf::Event::KeyPressed ) {
+            if (event.key.code == sf::Keyboard::A)
+                window.close();
+            else if (event.key.code == sf::Keyboard::Down) {
+                float t = clockSprite.getElapsedTime().asMilliseconds();
+                if (t >= 150) {
+                    rectSourceSprite.left = (rectSourceSprite.left >= (35 * 2) ? 0 : rectSourceSprite.left + 35);
+                    clockSprite.restart();
+                }
+                sprite.move(0, 175 * delta);
+            }
+        }
+    }
 }
 
 const std::shared_ptr<fys::network::TcpConnection> &fys::cl::Game::getGatewayConnection() {
