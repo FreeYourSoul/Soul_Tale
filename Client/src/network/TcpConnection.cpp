@@ -6,7 +6,6 @@
 #include <boost/asio.hpp>
 #include <FySMessage.pb.h>
 #include <FysBus.hh>
-#include <Game.hh>
 #include "TcpConnection.hh"
 
 fys::network::TcpConnection::TcpConnection(boost::asio::io_service& io_service) : _isShuttingDown(false), _socket(io_service) {

@@ -35,15 +35,13 @@ namespace fys::cl::buslistener {
     public:
         enum { IndexInBus = 1 };
 
-        explicit GamingListener(std::shared_ptr<Game> &ws);
+        explicit GamingListener(std::shared_ptr<Game> &game);
 
         void operator()(mq::QueueContainer<pb::FySMessage> msg);
 
 
     private:
-        std::shared_ptr<Game> _ws;
-        std::shared_ptr<WorldEngine> _worldEngine;
-
+        std::shared_ptr<Game> _game;
 
     };
 

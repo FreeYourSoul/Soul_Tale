@@ -7,7 +7,6 @@
 
 #include <string>
 #include <ostream>
-#include "GameServerInstance.hh"
 
 // -- Config File Keys
 static constexpr char WS_INI_PORT[] = "server.port";
@@ -66,7 +65,6 @@ namespace fys::cl {
         bool _verbose;
 
         std::string _tmxFileMapName;
-        std::vector<cl::GameServerInstance> _gameServers;
     };
 
 }

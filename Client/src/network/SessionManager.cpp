@@ -4,7 +4,6 @@
 
 #include <spdlog/spdlog.h>
 #include <FySMessage.pb.h>
-#include <TokenGenerator.hh>
 #include <TcpConnection.hh>
 #include "SessionManager.hh"
 
@@ -27,22 +26,17 @@ uint fys::network::SessionManager::addConnection(const std::shared_ptr<TcpConnec
 }
 
 void fys::network::SessionManager::connectionHandle(const fys::network::TcpConnection::ptr &newConnection, uint i) {
-    Token newToken = fys::utils::TokenGenerator::getInstance()->generateByte();
-
     this->_connections.at(i) = newConnection;
-    this->_connectionsToken.at(i) = newToken;
     newConnection->setSessionIndex(i);
-    newConnection->setCustomShutdownHandler([this, i, token = std::move(newToken)]() { this->disconnectUser(i, token); });
+    newConnection->setCustomShutdownHandler([this, i]() { this->disconnectUser(i); });
 }
 
-void fys::network::SessionManager::disconnectUser(uint idxSession, const fys::network::Token &token) {
+void fys::network::SessionManager::disconnectUser(uint idxSession) {
     if (idxSession < _connectionsToken.size()) {
-        if (std::equal(_connectionsToken.at(idxSession).begin(), _connectionsToken.at(idxSession).end(), token.begin())) {
-            spdlog::get("c")->debug("Disconnect user {} from Session manager ({}) and token {}", idxSession, _name, std::string(token.begin(), token.end()));
+            spdlog::get("c")->debug("Disconnect user {} from Session manager ({})", idxSession, _name);
             _connections.at(idxSession) = nullptr;
             _connectionsToken.at(idxSession) = {};
             return;
-        }
     }
     spdlog::get("c")->error("Couldn't find the specified user's token to disconnect on sessionManager {}", _name);
 }

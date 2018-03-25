@@ -1,11 +1,14 @@
 #include <spdlog/spdlog.h>
 #include <google/protobuf/stubs/common.h>
-#include <Game.hh>
 #include <FysBus.hh>
+#include <Game.hh>
 #include <BusListener.hh>
-#include <listener/Authenticator.hh>
 #include <FySMessage.pb.h>
 #include <listener/GamingListener.hh>
+#include <boost/asio/io_service.hpp>
+#include <Context.hh>
+#include <MemoryPool.hpp>
+#include <Sprite.hh>
 
 
 static const std::string welcomeMsg =
@@ -69,9 +72,8 @@ static const std::string welcomeMsg =
 
 using namespace fys::mq;
 using namespace fys::cl;
-using namespace fys::network;
 
-using GamingListener = BusListener <buslistener::GamingListener, FysBus<fys::pb::FySMessage, BUS_QUEUES_SIZE>>;
+using GamingListener = BusListener <buslistener::GamingListener, FysBus<fys::pb::FySMessage, 2>>;
 
 void welcome(bool verbose) {
     spdlog::set_async_mode(1024, spdlog::async_overflow_policy::discard_log_msg);
@@ -110,16 +112,15 @@ int main(int argc, const char * const *argv) {
         Context ctx(argc, argv);
         welcome(ctx.isVerbose());
         ctx.logContext();
-        auto fysBus = std::make_shared<FysBus<fys::pb::FySMessage, BUS_QUEUES_SIZE> > (fys::pb::Type_ARRAYSIZE);
-        Game::ptr worldServer = Game::create(ctx, ios, fysBus);
+        auto fysBus = std::make_shared<FysBus<fys::pb::FySMessage, 2> > (fys::pb::Type_ARRAYSIZE);
+        Game::ptr game = std::make_shared<Game>(ctx);
 
-        buslistener::Authenticator authenticator(worldServer);
-        buslistener::GamingListener gaming(worldServer);
-        GamingListener gamingListener(gamingListener);
+        buslistener::GamingListener gaming(game);
+        GamingListener gamingListener(gaming);
+
+        game->runGamingLoop();
 
         ::sleep(1);
-        worldServer->runPlayerAccept();
-        worldServer->connectToGateway(ctx);
         ios.run();
     }
     catch (std::exception &e) {

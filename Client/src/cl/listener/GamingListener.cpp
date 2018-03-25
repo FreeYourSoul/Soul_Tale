@@ -10,7 +10,7 @@
 
 using namespace google::protobuf::util;
 
-fys::cl::buslistener::GamingListener::GamingListener(std::shared_ptr<fys::cl::Game> &ws) {
+fys::cl::buslistener::GamingListener::GamingListener(std::shared_ptr<fys::cl::Game> &game) : _game(game) {
 }
 
 void fys::cl::buslistener::GamingListener::operator()(fys::mq::QueueContainer<pb::FySMessage> msg) {
