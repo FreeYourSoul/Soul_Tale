@@ -49,15 +49,17 @@ namespace fys::cl {
 
     private:
         void authOnGameServer(boost::asio::io_service &, const std::string &, ushort, const std::string &);
+        void consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSourceSprite, sf::Sprite &sprite);
+        void sendMovingState(double moveAngle, bool stop = false);
 
     private:
-        std::unique_ptr<SpriteMemoryPool> _spriteMemPool;
 
+
+        std::unique_ptr<SpriteMemoryPool> _spriteMemPool;
         std::shared_ptr<network::TcpConnection> _gatewayConnection;
         std::shared_ptr<network::TcpConnection> _serverConnection;
         std::string _token;
 
-        void consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSourceSprite, sf::Sprite &sprite);
     };
 
 }

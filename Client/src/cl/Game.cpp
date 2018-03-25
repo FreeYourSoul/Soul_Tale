@@ -11,6 +11,7 @@
 #include <tmx/SFMLOrthogonalLayer.hpp>
 #include <FySAuthenticationLoginMessage.pb.h>
 #include <FySMessage.pb.h>
+#include <FySPlayerInteraction.pb.h>
 
 fys::cl::Game::Game(boost::asio::io_service &ios, const fys::cl::Context &ctx) :
         _spriteMemPool(std::make_unique<SpriteMemoryPool>(MEMORY_POOL_SIZE)),
@@ -78,8 +79,8 @@ void fys::cl::Game::runGamingLoop() {
         MapLayer GatesL1(map, 3);
         window.setFramerateLimit(60);
         sf::Texture texture;
-        texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/perso3tile.png");
-        sf::IntRect rectSourceSprite(0, 0, 35, 50);
+        texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/sprites/persoMoveTile.png");
+        sf::IntRect rectSourceSprite(0, 100, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
 
 
@@ -97,7 +98,7 @@ void fys::cl::Game::runGamingLoop() {
             window.display();
         }
     });
-    thread.join();
+    thread.detach();
 }
 
 void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSourceSprite, sf::Sprite &sprite) {
@@ -107,19 +108,41 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
     sf::Event event;
     float delta = clock.restart().asSeconds();
     while (window.pollEvent(event)) {
-        if (event.type == sf::Event::KeyPressed ) {
+        if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::A)
                 window.close();
-            else if (event.key.code == sf::Keyboard::Down) {
+            else if (event.key.code == sf::Keyboard::Right) {
                 float t = clockSprite.getElapsedTime().asMilliseconds();
                 if (t >= 150) {
-                    rectSourceSprite.left = (rectSourceSprite.left >= (35 * 2) ? 0 : rectSourceSprite.left + 35);
+                    rectSourceSprite.left = (rectSourceSprite.left >= (35 * 3) ? 0 : rectSourceSprite.left + 35);
                     clockSprite.restart();
                 }
-                sprite.move(0, 175 * delta);
+                sprite.move(175 * delta, 0);
+                sendMovingState(0.0);
             }
         }
+        else if (event.type == sf::Event::KeyReleased) {
+
+        }
     }
+}
+
+void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
+    fys::pb::FySMessage msg;
+    fys::pb::PlayerInteract piMsg;
+
+    msg.set_type(fys::pb::PLAYER_INTERACTION);
+    piMsg.set_token(_token);
+    if (!stop) {
+        fys::pb::PlayerMove moveMsg;
+        moveMsg.set_angle(moveAngle);
+        piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_ON);
+        piMsg.mutable_content()->PackFrom(moveMsg);
+    }
+    else
+        piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_OFF);
+    msg.mutable_content()->PackFrom(piMsg);
+    _serverConnection->send(std::move(msg));
 }
 
 const std::shared_ptr<fys::network::TcpConnection> &fys::cl::Game::getGatewayConnection() {

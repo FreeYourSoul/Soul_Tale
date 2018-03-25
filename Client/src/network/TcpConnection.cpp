@@ -45,18 +45,14 @@ void fys::network::TcpConnection::uniqueReadOnSocket(
     std::memset(_buffer, 0, MESSAGE_BUFFER_SIZE);
     _socket.async_read_some(boost::asio::buffer(_buffer, MESSAGE_BUFFER_SIZE),
                             [this, handler = std::move(handler)](boost::system::error_code ec, const std::size_t byteTransferred) {
-                                if (!((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec)) && !_isShuttingDown) {
-                                    fys::pb::FySResponseMessage m;
-                                    m.ParseFromArray(_buffer, static_cast<int>(byteTransferred));
-                                    spdlog::get("c")->debug("Unique read socket success bytes: {} message: {}", byteTransferred, m.ShortDebugString());
+                                fys::pb::FySResponseMessage m;
+                                m.ParseFromArray(_buffer, static_cast<int>(byteTransferred));
+                                spdlog::get("c")->debug("Unique read socket success bytes: {} message: {}", byteTransferred, m.ShortDebugString());
 
-                                    fys::pb::AuthenticationResponse ar;
-                                    m.content().UnpackTo(&ar);
-                                    auto portWs = static_cast<ushort>(std::stoul(ar.port()));
-                                    handler(ar.ip(), portWs, ar.token());
-                                }
-                                else
-                                    shuttingConnectionDown();
+                                fys::pb::AuthenticationResponse ar;
+                                m.content().UnpackTo(&ar);
+                                auto portWs = static_cast<ushort>(std::stoul(ar.port()));
+                                handler(ar.ip(), portWs, ar.token());
                             });
 }
 

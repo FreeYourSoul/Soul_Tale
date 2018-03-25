@@ -68,7 +68,6 @@ namespace fys::cl {
         bool _verbose;
 
         std::string _tmxFileMapName;
-        std::list<Context::Sprite> _spritesCtx;
 
     };
 
