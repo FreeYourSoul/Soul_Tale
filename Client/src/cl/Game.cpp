@@ -2,26 +2,72 @@
 // Created by FyS on 25/03/18.
 //
 
+#include <MemoryPool.hpp>
+#include <Game.hh>
+#include <TcpConnection.hh>
+#include <Sprite.hh>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <tmx/SFMLOrthogonalLayer.hpp>
-#include <MemoryPool.hpp>
-#include <Sprite.hh>
-#include <Game.hh>
+#include <FySAuthenticationLoginMessage.pb.h>
+#include <FySMessage.pb.h>
 
-fys::cl::Game::Game(const fys::cl::Context &ctx) :
-        _spriteMemPool(std::make_unique<SpriteMemoryPool>(MEMORY_POOL_SIZE)) {
-
+fys::cl::Game::Game(boost::asio::io_service &ios, const fys::cl::Context &ctx) :
+        _spriteMemPool(std::make_unique<SpriteMemoryPool>(MEMORY_POOL_SIZE)),
+        _gatewayConnection(network::TcpConnection::create(ios)),
+        _serverConnection(network::TcpConnection::create(ios)),
+        _token("") {
 }
 
-void fys::cl::Game::connectClient(const fys::cl::Context &ctx) {
+void fys::cl::Game::connectClient(boost::asio::io_service &ios, const fys::cl::Context &ctx) {
+    if (_token.empty()) {
+        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(ctx.getGtwIp()), ctx.getGtwPort());
+        _gatewayConnection->getSocket().connect(endpoint);
+        _gatewayConnection->setCustomShutdownHandler([this](){  _token = ""; });
 
+        fys::pb::FySMessage msg;
+        fys::pb::LoginMessage loginMsg;
+        fys::pb::LoginPlayerOnGateway lpog;
+
+        lpog.set_password("password");
+        loginMsg.set_typemessage(fys::pb::LoginMessage_Type_LoginPlayerOnGateway);
+        loginMsg.mutable_content()->PackFrom(lpog);
+        msg.set_type(fys::pb::AUTH);
+        msg.mutable_content()->PackFrom(loginMsg);
+        _gatewayConnection->send(std::move(msg));
+        _gatewayConnection->uniqueReadOnSocket(
+                [this, &ios](const std::string &ip, ushort port, const std::string &token) {
+                    authOnGameServer(ios, ip, port, token);
+                });
+    }
+    else
+        spdlog::get("c")->error("Attempting to reconnect on the gateway while having a token set {}", _token);
+}
+
+void fys::cl::Game::authOnGameServer(boost::asio::io_service &service,
+                                     const std::string &ip, ushort port, const std::string &token) {
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(ip), port);
+    _serverConnection->getSocket().connect(endpoint);
+    _serverConnection->setCustomShutdownHandler([this](){  _token = ""; });
+    _token = token;
+
+    fys::pb::FySMessage msg;
+    fys::pb::LoginMessage loginMsg;
+    fys::pb::LogingPlayerOnGame lpog;
+
+    lpog.set_tokengameserver(token);
+    loginMsg.set_typemessage(fys::pb::LoginMessage_Type_LoginPlayerOnGame);
+    loginMsg.mutable_content()->PackFrom(lpog);
+    msg.set_type(fys::pb::AUTH);
+    msg.mutable_content()->PackFrom(loginMsg);
+
+    _serverConnection->send(std::move(msg));
 }
 
 void fys::cl::Game::runGamingLoop() {
     std::thread thread([this](){
 
-        sf::RenderWindow window(sf::VideoMode(600, 400), "SFML window");
+        sf::RenderWindow window(sf::VideoMode(600, 400), "FreeYourSoul");
 
         tmx::Map map;
         map.load("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/tmx_maps/map.tmx");
@@ -30,21 +76,30 @@ void fys::cl::Game::runGamingLoop() {
         MapLayer coverBaseL1(map, 1);
         MapLayer collisionL1(map, 2);
         MapLayer GatesL1(map, 3);
-
         window.setFramerateLimit(60);
         sf::Texture texture;
         texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/perso3tile.png");
         sf::IntRect rectSourceSprite(0, 0, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
+        sf::Clock clock;
+        sf::Clock clockSprite;
 
         while (window.isOpen()) {
             sf::Event event;
+            float delta = clock.restart().asSeconds();
             while (window.pollEvent(event)) {
-                if (event.type == sf::Event::KeyPressed )
+                if (event.type == sf::Event::KeyPressed ) {
                     if (event.key.code == sf::Keyboard::A)
                         window.close();
-                    else if (event.key.code == sf::Keyboard::D)
-                        rectSourceSprite.left = (rectSourceSprite.left >= (35 * 2) ? 0 : rectSourceSprite.left + 35);
+                    else if (event.key.code == sf::Keyboard::S) {
+                        float t = clockSprite.getElapsedTime().asMilliseconds();
+                        if (t >= 150) {
+                            rectSourceSprite.left = (rectSourceSprite.left >= (35 * 2) ? 0 : rectSourceSprite.left + 35);
+                            clockSprite.restart();
+                        }
+                        sprite.move(0, 175 * delta);
+                    }
+                }
             }
             sprite.setTextureRect(rectSourceSprite);
             window.clear(sf::Color::Black);
@@ -57,4 +112,12 @@ void fys::cl::Game::runGamingLoop() {
         }
     });
     thread.join();
+}
+
+const std::shared_ptr<fys::network::TcpConnection> &fys::cl::Game::getGatewayConnection() {
+    return _gatewayConnection;
+}
+
+const std::shared_ptr<fys::network::TcpConnection> &fys::cl::Game::getServerConnection() {
+    return _serverConnection;
 }

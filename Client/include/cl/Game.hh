@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include <boost/asio/io_service.hpp>
 
 namespace fys {
     namespace cl {
@@ -18,6 +19,10 @@ namespace fys {
         class MemoryPool;
 
         class Sprite;
+    }
+
+    namespace network {
+        class TcpConnection;
     }
 }
 
@@ -32,14 +37,24 @@ namespace fys::cl {
         using ptr = std::shared_ptr<Game>;
         using wptr = std::weak_ptr<Game>;
 
-        Game(const fys::cl::Context &ctx);
+        Game(boost::asio::io_service& ios, const fys::cl::Context &ctx);
 
-        void connectClient(const fys::cl::Context& ctx);
+        void connectClient(boost::asio::io_service &ios, const fys::cl::Context& ctx);
 
         void runGamingLoop();
 
+        const std::shared_ptr<network::TcpConnection> &getGatewayConnection();
+        const std::shared_ptr<network::TcpConnection> &getServerConnection();
+
+    private:
+        void authOnGameServer(boost::asio::io_service &, const std::string &, ushort, const std::string &);
+
     private:
         std::unique_ptr<SpriteMemoryPool> _spriteMemPool;
+
+        std::shared_ptr<network::TcpConnection> _gatewayConnection;
+        std::shared_ptr<network::TcpConnection> _serverConnection;
+        std::string _token;
 
     };
 

@@ -57,13 +57,11 @@ void fys::cl::Context::initializeFromIni(const std::string &iniPath) {
     boost::property_tree::ptree pt;
     boost::property_tree::read_ini(iniPath, pt);
 
-    setPort(pt.get<ushort>(WS_INI_PORT));
-    setGtwPort(pt.get<ushort>(WS_INI_GTW_PORT));
-    setGtwIp(std::move(pt.get<std::string>(WS_INI_GTW_IP)));
-    setAsioThread(pt.get<std::size_t>(WS_INI_ASIO_THREADS));
-    setQueuesSize(pt.get<std::size_t>(WS_QUEUES_SIZE));
-    setPositionId(pt.get<std::string>(WS_MAP_POSITIONID));
-    setTmxFileMapName(pt.get<std::string>(WS_MAP_TMX));
+    setGtwPort(pt.get<ushort>(CL_INI_GTW_PORT));
+    setGtwIp(std::move(pt.get<std::string>(CL_INI_GTW_IP)));
+    setQueuesSize(pt.get<std::size_t>(CL_QUEUES_SIZE));
+    setPositionId(pt.get<std::string>(CL_MAP_POSITIONID));
+    setTmxFileMapName(pt.get<std::string>(CL_MAP_TMX));
 }
 
 ushort fys::cl::Context::getPort() const {

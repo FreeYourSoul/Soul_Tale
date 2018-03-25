@@ -3,10 +3,12 @@
 //
 
 #include <spdlog/spdlog.h>
+#include "TcpConnection.hh"
 #include <boost/asio.hpp>
 #include <FySMessage.pb.h>
 #include <FysBus.hh>
-#include "TcpConnection.hh"
+#include <FySAuthenticationResponse.pb.h>
+
 
 fys::network::TcpConnection::TcpConnection(boost::asio::io_service& io_service) : _isShuttingDown(false), _socket(io_service) {
 }
@@ -33,8 +35,28 @@ void fys::network::TcpConnection::send(google::protobuf::Message&& msg) {
 void fys::network::TcpConnection::readOnSocket(fys::mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>::ptr &fysBus) {
     std::memset(_buffer, 0, MESSAGE_BUFFER_SIZE);
     _socket.async_read_some(boost::asio::buffer(_buffer, MESSAGE_BUFFER_SIZE),
-                             [this, fysBus](boost::system::error_code ec, const std::size_t byteTransferred) {
+                            [this, fysBus](boost::system::error_code ec, const std::size_t byteTransferred) {
                                 this->handleRead(ec, byteTransferred, fysBus);
+                            });
+}
+
+void fys::network::TcpConnection::uniqueReadOnSocket(
+        std::function<void(const std::string &, ushort, const std::string&)> handler) {
+    std::memset(_buffer, 0, MESSAGE_BUFFER_SIZE);
+    _socket.async_read_some(boost::asio::buffer(_buffer, MESSAGE_BUFFER_SIZE),
+                            [this, handler = std::move(handler)](boost::system::error_code ec, const std::size_t byteTransferred) {
+                                if (!((boost::asio::error::eof == ec) || (boost::asio::error::connection_reset == ec)) && !_isShuttingDown) {
+                                    fys::pb::FySResponseMessage m;
+                                    m.ParseFromArray(_buffer, static_cast<int>(byteTransferred));
+                                    spdlog::get("c")->debug("Unique read socket success bytes: {} message: {}", byteTransferred, m.ShortDebugString());
+
+                                    fys::pb::AuthenticationResponse ar;
+                                    m.content().UnpackTo(&ar);
+                                    auto portWs = static_cast<ushort>(std::stoul(ar.port()));
+                                    handler(ar.ip(), portWs, ar.token());
+                                }
+                                else
+                                    shuttingConnectionDown();
                             });
 }
 

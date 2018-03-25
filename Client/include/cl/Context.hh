@@ -9,13 +9,11 @@
 #include <ostream>
 
 // -- Config File Keys
-static constexpr char WS_INI_PORT[] = "server.port";
-static constexpr char WS_INI_GTW_PORT[] = "gateway.port";
-static constexpr char WS_INI_GTW_IP[] = "gateway.ip";
-static constexpr char WS_INI_ASIO_THREADS[] = "server.asioThread";
-static constexpr char WS_QUEUES_SIZE[] = "bus.queuesSize";
-static constexpr char WS_MAP_POSITIONID[] = "map.positionId";
-static constexpr char WS_MAP_TMX[] = "map.tmxPath";
+static constexpr char CL_INI_GTW_PORT[] = "gateway.port";
+static constexpr char CL_INI_GTW_IP[] = "gateway.ip";
+static constexpr char CL_QUEUES_SIZE[] = "bus.queuesSize";
+static constexpr char CL_MAP_TMX[] = "map.tmxPath";
+static constexpr char CL_MAP_POSITIONID[] = "map.positionId";
 
 namespace fys::cl {
 

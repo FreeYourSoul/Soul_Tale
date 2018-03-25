@@ -113,18 +113,19 @@ int main(int argc, const char * const *argv) {
         welcome(ctx.isVerbose());
         ctx.logContext();
         auto fysBus = std::make_shared<FysBus<fys::pb::FySMessage, 2> > (fys::pb::Type_ARRAYSIZE);
-        Game::ptr game = std::make_shared<Game>(ctx);
+        Game::ptr game = std::make_shared<Game>(ios, ctx);
 
         buslistener::GamingListener gaming(game);
         GamingListener gamingListener(gaming);
 
+        game->connectClient(ios, ctx);
         game->runGamingLoop();
 
         ::sleep(1);
         ios.run();
     }
     catch (std::exception &e) {
-        spdlog::get("c")->error("Exception on the main {}", e.what());
+        spdlog::get("c")->error("Exception on the main, {}", e.what());
     }
     google::protobuf::ShutdownProtobufLibrary();
     return 0;

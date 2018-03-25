@@ -43,6 +43,7 @@ namespace fys::network {
         boost::asio::ip::tcp::socket& getSocket();
 
         void readOnSocket(std::shared_ptr<mq::FysBus<pb::FySMessage, cl::BUS_QUEUES_SIZE>> &fysBus);
+        void uniqueReadOnSocket(std::function<void(const std::string&, ushort, const std::string&)> handler);
         void send(google::protobuf::Message&& msg);
 
         void setCustomShutdownHandler(const std::function<void()> &customShutdownHandler);
