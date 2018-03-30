@@ -128,5 +128,5 @@ int main(int argc, const char * const *argv) {
         spdlog::get("c")->error("Exception on the main, {}", e.what());
     }
     google::protobuf::ShutdownProtobufLibrary();
-    return 0;
+        return 0;
 }

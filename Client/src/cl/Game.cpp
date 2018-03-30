@@ -107,7 +107,7 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
     static sf::Clock clockSprite;
 
     sf::Event event;
-    float delta = clock.restart().asSeconds();
+    float delta = clock.restart().asMilliseconds();
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::A)
@@ -118,7 +118,10 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
                     rectSourceSprite.left = (rectSourceSprite.left >= (35 * 3) ? 0 : rectSourceSprite.left + 35);
                     clockSprite.restart();
                 }
-                sprite.move(175 * delta, 0);
+                std::ostringstream ss;
+                sprite.move(static_cast<float>(0.175 * delta), 0);
+                ss << "0.175*" << delta << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
+                std::cout << ss.str() << std::endl;
                 sendMovingState(0.0);
             }
         }
