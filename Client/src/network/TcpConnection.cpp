@@ -22,12 +22,14 @@ void fys::network::TcpConnection::send(google::protobuf::Message&& msg) {
     std::ostream os(&b);
     msg.SerializeToOstream(&os);
 
+    std::string ok = msg.ShortDebugString();
     _socket.async_write_some(b.data(),
-                             [this](const boost::system::error_code& ec, [[maybe_unused]]std::size_t bytesTransferred) {
+                             [this, ok](const boost::system::error_code& ec, [[maybe_unused]]std::size_t bytesTransferred) {
                                  if (ec && !_isShuttingDown) {
                                      spdlog::get("c")->debug("An Error Occurred during writing {}", ec.message());
                                      shuttingConnectionDown();
                                  }
+                                 spdlog::get("c")->debug("timestamp sending message {}", ok);
                              }
     );
 }

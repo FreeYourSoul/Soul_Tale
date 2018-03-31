@@ -130,8 +130,8 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
                     clockSprite.restart();
                 }
                 std::ostringstream ss;
-                sprite.move(static_cast<float>(0.6 * (delta / 16)), 0);
-                ss << "0.6 x " << (delta /16.6666) << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
+                sprite.move(static_cast<float>(0.6 * std::round(delta / 16.6666)), 0);
+                ss << "0.6 x " << std::round(delta / 16.6666) << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
                 std::cout << ss.str() << std::endl;
                 sendMovingState(0.0);
             }
@@ -151,9 +151,12 @@ void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
     moveMsg.set_angle(moveAngle);
     msg.set_type(fys::pb::PLAYER_INTERACTION);
     auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
-    timestamp->set_seconds(std::chrono::duration_cast<std::chrono::seconds>(time).count());
-    timestamp->set_nanos(
-            std::abs(static_cast<google::protobuf::int32>(std::chrono::duration_cast<std::chrono::nanoseconds>(time).count())));
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    timestamp->set_seconds(tv.tv_sec);
+    timestamp->set_nanos(static_cast<google::protobuf::int32>(tv.tv_usec * 1000));
+
     piMsg.set_token(_token);
     piMsg.set_allocated_time(timestamp);
     piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_OFF);
