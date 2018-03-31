@@ -151,8 +151,8 @@ void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
     moveMsg.set_angle(moveAngle);
     msg.set_type(fys::pb::PLAYER_INTERACTION);
     auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+    ::timeval tv;
+    gettimeofday(&tv, nullptr);
 
     timestamp->set_seconds(tv.tv_sec);
     timestamp->set_nanos(static_cast<google::protobuf::int32>(tv.tv_usec * 1000));
