@@ -78,14 +78,17 @@ void fys::cl::Game::runGamingLoop() {
         MapLayer coverBaseL1(map, 1);
         MapLayer collisionL1(map, 2);
         MapLayer GatesL1(map, 3);
-        window.setFramerateLimit(60);
         sf::Texture texture;
         texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/sprites/persoMoveTile.png");
         sf::IntRect rectSourceSprite(0, 100, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
-
+        double timeEpochStart = 0;
+        double timeEpochEnd = 0;
+        double previousStart = 0;
 
         while (window.isOpen()) {
+            auto start = std::chrono::high_resolution_clock::now();
+            timeEpochStart = std::chrono::duration_cast<std::chrono::milliseconds>(start.time_since_epoch()).count();
 
             consumeEvent(window, rectSourceSprite, sprite);
 
@@ -97,6 +100,14 @@ void fys::cl::Game::runGamingLoop() {
             window.draw(GatesL1);
             window.draw(sprite);
             window.display();
+
+            auto end = std::chrono::high_resolution_clock::now();
+            timeEpochEnd = std::chrono::duration_cast<std::chrono::milliseconds>(end.time_since_epoch()).count();
+            double sleepTime = (timeEpochStart + 16.6666) - timeEpochEnd;
+            if (sleepTime > 0) {
+                std::chrono::duration<double, std::milli> dur(sleepTime);
+                std::this_thread::sleep_for(dur);
+            }
         }
     });
     thread.detach();
@@ -119,8 +130,8 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
                     clockSprite.restart();
                 }
                 std::ostringstream ss;
-                sprite.move(static_cast<float>(0.175 * delta), 0);
-                ss << "0.175*" << delta << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
+                sprite.move(static_cast<float>(0.6 * (delta / 16)), 0);
+                ss << "0.6 x " << (delta /16.6666) << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
                 std::cout << ss.str() << std::endl;
                 sendMovingState(0.0);
             }
@@ -132,15 +143,17 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
 }
 
 void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
-    google::protobuf::Timestamp *timestamp = new google::protobuf::Timestamp();
+    auto *timestamp = new google::protobuf::Timestamp();
     fys::pb::FySMessage msg;
     fys::pb::PlayerInteract piMsg;
     fys::pb::PlayerMove moveMsg;
 
     moveMsg.set_angle(moveAngle);
     msg.set_type(fys::pb::PLAYER_INTERACTION);
-    timestamp->set_seconds(time(nullptr));
-    timestamp->set_nanos(0);
+    auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
+    timestamp->set_seconds(std::chrono::duration_cast<std::chrono::seconds>(time).count());
+    timestamp->set_nanos(
+            std::abs(static_cast<google::protobuf::int32>(std::chrono::duration_cast<std::chrono::nanoseconds>(time).count())));
     piMsg.set_token(_token);
     piMsg.set_allocated_time(timestamp);
     piMsg.set_type(fys::pb::PlayerInteract_Type::PlayerInteract_Type_MOVE_OFF);
