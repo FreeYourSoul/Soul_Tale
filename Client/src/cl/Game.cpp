@@ -72,14 +72,14 @@ void fys::cl::Game::runGamingLoop() {
         sf::RenderWindow window(sf::VideoMode(600, 400), "FreeYourSoul");
 
         tmx::Map map;
-        map.load("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/tmx_maps/map.tmx");
+        map.load("/home/FyS/ClionProjects/FreeYourSoul_Client/Client/resource/tmx_maps/map.tmx");
 
         MapLayer baseLayer(map, 0);
         MapLayer coverBaseL1(map, 1);
         MapLayer collisionL1(map, 2);
         MapLayer GatesL1(map, 3);
         sf::Texture texture;
-        texture.loadFromFile("/home/FyS/ClionProjects/FreeSouls_Client/Client/resource/sprites/persoMoveTile.png");
+        texture.loadFromFile("/home/FyS/ClionProjects/FreeYourSoul_Client/Client/resource/sprites/persoMoveTile.png");
         sf::IntRect rectSourceSprite(0, 100, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
         double timeEpochStart = 0;
@@ -103,7 +103,7 @@ void fys::cl::Game::runGamingLoop() {
 
             auto end = std::chrono::high_resolution_clock::now();
             timeEpochEnd = std::chrono::duration_cast<std::chrono::milliseconds>(end.time_since_epoch()).count();
-            double sleepTime = (timeEpochStart + 16.6666) - timeEpochEnd;
+            double sleepTime = (timeEpochStart + 16.666) - timeEpochEnd;
             if (sleepTime > 0) {
                 std::chrono::duration<double, std::milli> dur(sleepTime);
                 std::this_thread::sleep_for(dur);
@@ -117,7 +117,7 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
     static sf::Clock clock;
     static sf::Clock clockSprite;
 
-    sf::Event event;
+    sf::Event event{};
     float delta = clock.restart().asMilliseconds();
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::KeyPressed) {
@@ -130,7 +130,8 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
                     clockSprite.restart();
                 }
                 std::ostringstream ss;
-                sprite.move(static_cast<float>(0.6 * std::round(delta / 16.6666)), 0);
+                // (speed * sprite_size) *
+                sprite.move(static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)), 0);
                 ss << "0.6 x " << std::round(delta / 16.6666) << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
                 std::cout << ss.str() << std::endl;
                 sendMovingState(0.0);
@@ -151,7 +152,7 @@ void fys::cl::Game::sendMovingState(double moveAngle, bool stop) {
     moveMsg.set_angle(moveAngle);
     msg.set_type(fys::pb::PLAYER_INTERACTION);
     auto time = std::chrono::high_resolution_clock::now().time_since_epoch();
-    ::timeval tv;
+    ::timeval tv{};
     gettimeofday(&tv, nullptr);
 
     timestamp->set_seconds(tv.tv_sec);

@@ -6,6 +6,7 @@
 #define FREESOULS_TCPCONNECTION_HH
 
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio.hpp>
 #include <Context.hh>
 
 // forward declarations
