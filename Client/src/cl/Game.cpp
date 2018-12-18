@@ -72,14 +72,14 @@ void fys::cl::Game::runGamingLoop() {
         sf::RenderWindow window(sf::VideoMode(600, 400), "FreeYourSoul");
 
         tmx::Map map;
-        map.load("/home/FyS/ClionProjects/FreeYourSoul_Client/Client/resource/tmx_maps/map.tmx");
+        map.load("/home/FyS/Project/FreeYourSouls_Client/Client/resource/tmx_maps/map.tmx");
 
         MapLayer baseLayer(map, 0);
         MapLayer coverBaseL1(map, 1);
         MapLayer collisionL1(map, 2);
         MapLayer GatesL1(map, 3);
         sf::Texture texture;
-        texture.loadFromFile("/home/FyS/ClionProjects/FreeYourSoul_Client/Client/resource/sprites/persoMoveTile.png");
+        texture.loadFromFile("/home/FyS/Project/FreeYourSouls_Client/Client/resource/sprites/persoMoveTile.png1");
         sf::IntRect rectSourceSprite(0, 100, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
         double timeEpochStart = 0;

@@ -1,4 +1,5 @@
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 #include <google/protobuf/stubs/common.h>
 #include <FysBus.hh>
 #include <Game.hh>
@@ -76,26 +77,17 @@ using namespace fys::cl;
 using GamingListener = BusListener <buslistener::GamingListener, FysBus<fys::pb::FySMessage, 2>>;
 
 void welcome(bool verbose) {
-    spdlog::set_async_mode(1024, spdlog::async_overflow_policy::discard_log_msg);
-
-    std::vector<spdlog::sink_ptr> sinks;
-
-    if (verbose) {
-        auto stdout_sink = spdlog::sinks::stdout_sink_mt::instance();
-        auto color_sink = std::make_shared<spdlog::sinks::ansicolor_sink>(stdout_sink);
-        sinks.push_back(color_sink);
-    }
-    auto sys_logger = std::make_shared<spdlog::logger>("c", begin(sinks), end(sinks));
+    auto sys_logger = spdlog::stdout_color_mt("c");
 #ifdef DEBUG_LEVEL
     sys_logger->set_level(spdlog::level::debug);
 #else
     sys_logger->set_level(spdlog::level::debug);
 #endif
-    spdlog::register_logger(sys_logger);
     spdlog::set_pattern("[%x %H:%M:%S] [%t] [%l] %v");
     sys_logger->info("Logger set to level {}\n>> log formatting>> [time] [thread] [logLevel] message logged", spdlog::get("c")->level());
     spdlog::get("c")->info(welcomeMsg);
 }
+
 
 int main(int argc, const char * const *argv) {
     GOOGLE_PROTOBUF_VERIFY_VERSION;

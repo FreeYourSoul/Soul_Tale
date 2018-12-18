@@ -1,5 +1,5 @@
 main:
-    sprite_sheet: "/home/FyS/ClionProjects/FreeYourSoul_Client/Client/resource/sprites/persoMoveTile.png"
+    sprite_sheet: "/home/FyS/Project/FreeYourSouls_Client/Client/resource/sprites/persoMoveTile.png"
     char1:
         render: {firstspacing: "false", spacing: 0, height: 50, width: 35}
         down:   {nb_in_animation: 4, sprite_duration: [75, 75, 75], x: 0, y: 0}

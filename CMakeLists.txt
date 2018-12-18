@@ -12,15 +12,18 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Boost REQUIRED)
 find_package(TMXLITE REQUIRED)
-find_package(SFML 2 REQUIRED graphics window system)
+
+find_package(SFML 2 REQUIRED system window graphics network audio)
 
 enable_testing()
 
 add_subdirectory(Protobuf)
 
 include_directories(
+        ${SFML2_INCLUDE_DIR}
         ${TMXLITE_INCLUDE_DIR}
         ${CMAKE_SOURCE_DIR}/cmake-build-debug/Protobuf
+        ${CMAKE_SOURCE_DIR}/Protobuf
         ${CMAKE_SOURCE_DIR}/FySMQ/include/queue
         ${CMAKE_SOURCE_DIR}/FySMQ/include/bus
         ${CMAKE_SOURCE_DIR}/FySMemoryManager/include
