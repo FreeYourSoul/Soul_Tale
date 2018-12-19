@@ -2,6 +2,7 @@
 // Created by FyS on 25/03/18.
 //
 
+#include <cmath>
 #include <MemoryPool.hpp>
 #include <Game.hh>
 #include <TcpConnection.hh>
@@ -79,7 +80,7 @@ void fys::cl::Game::runGamingLoop() {
         MapLayer collisionL1(map, 2);
         MapLayer GatesL1(map, 3);
         sf::Texture texture;
-        texture.loadFromFile("/home/FyS/Project/FreeYourSouls_Client/Client/resource/sprites/persoMoveTile.png1");
+        texture.loadFromFile("/home/FyS/Project/FreeYourSouls_Client/Client/resource/sprites/persoMoveTile.png");
         sf::IntRect rectSourceSprite(0, 100, 35, 50);
         sf::Sprite sprite(texture, rectSourceSprite);
         double timeEpochStart = 0;
@@ -123,18 +124,34 @@ void fys::cl::Game::consumeEvent(sf::RenderWindow &window, sf::IntRect &rectSour
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::A)
                 window.close();
-            else if (event.key.code == sf::Keyboard::Right) {
+            else {
+                double angle = 0.0;
                 float t = clockSprite.getElapsedTime().asMilliseconds();
                 if (t >= 150) {
                     rectSourceSprite.left = (rectSourceSprite.left >= (35 * 3) ? 0 : rectSourceSprite.left + 35);
                     clockSprite.restart();
                 }
+                if (event.key.code == sf::Keyboard::Right) {
+                    sprite.move(static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)), 0);
+                    angle = 0.0;
+                }
+                else if (event.key.code == sf::Keyboard::Left) {
+                    sprite.move((static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)) * -1), 0);
+                    angle = M_PI;
+                }
+                else if (event.key.code == sf::Keyboard::Up) {
+                    sprite.move(0, (static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)) * -1));
+                    angle = M_PI_2 + M_PI;
+                }
+                else if (event.key.code == sf::Keyboard::Down) {
+                    sprite.move(0, static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)));
+                    angle = M_PI_2;
+                }
                 std::ostringstream ss;
-                // (speed * sprite_size) *
-                sprite.move(static_cast<float>((0.025 * 24) * std::round(delta / 16.6666)), 0);
-                ss << "0.6 x " << std::round(delta / 16.6666) << " Position x:"<< sprite.getPosition().x << " y:" << sprite.getPosition().y;
+                ss << "0.6 x " << std::round(delta / 16.6666) << " Position x:" << sprite.getPosition().x << " y:"
+                   << sprite.getPosition().y;
                 std::cout << ss.str() << std::endl;
-                sendMovingState(0.0);
+                sendMovingState(angle);
             }
         }
         else if (event.type == sf::Event::KeyReleased) {
