@@ -1,4 +1,0 @@
-/home/FyS/ClionProjects/FreeYourSoul_WorldServer/FySMQ/CMakeFiles/edit_cache.dir
-/home/FyS/ClionProjects/FreeYourSoul_WorldServer/FySMQ/CMakeFiles/rebuild_cache.dir
-/home/FyS/ClionProjects/FreeYourSoul_WorldServer/FySMQ/CMakeFiles/FreeSouls.dir
-/home/FyS/ClionProjects/FreeYourSoul_WorldServer/FySMQ/CMakeFiles/UnitTests.dir

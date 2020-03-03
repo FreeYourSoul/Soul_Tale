@@ -1,1 +1,0 @@
-/usr/bin/g++   -std=c++17 -lboost_timer -lboost_system -lboost_thread -pthread -Wall -Wpedantic -Wextra   -rdynamic CMakeFiles/FreeSouls.dir/main.cpp.o  -o FreeSouls 
