@@ -7,4 +7,14 @@ endif ()
 
 project(Soul_Tale CXX)
 
+add_executable(Soul_Tale
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+
+target_include_directories(Soul_Tale PRIVATE
+        ${ALLEGRO_INCLUDE_DIRS}
+        ${ALLEGRO_FONT_INCLUDE_DIRS})
+target_link_libraries(Soul_Tale PRIVATE
+        ${ALLEGRO_LIBRARIES}
+        ${ALLEGRO_FONT_LIBRARIES})
+target_compile_features(Soul_Tale PRIVATE cxx_std_20)
 

@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.6...3.15)
+if (${CMAKE_VERSION} VERSION_LESS 3.15)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else ()
+    cmake_policy(VERSION 3.15)
+endif ()
+
+project(allegro_tmx_test CXX)
