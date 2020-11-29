@@ -7,5 +7,4 @@ endif ()
 
 project(Soul_Tale CXX)
 
-add_subdirectory(soul_tale)
 
