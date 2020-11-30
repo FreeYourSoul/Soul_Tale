@@ -24,6 +24,8 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 
+#include <allegro_tmx/allegro_tmx.hh>
+
 int main(int ac, char** av) {
   al_init();
   al_install_keyboard();
@@ -41,6 +43,12 @@ int main(int ac, char** av) {
   ALLEGRO_EVENT event;
 
   al_start_timer(timer);
+
+  tmx::Map map;
+  map.load("/home/FyS/Project/Soul_Tale/asset/maps/WS00.tmx");
+  allegro_tmx::MapLayer m(map, 0);
+  allegro_tmx::MapLayer m2(map, 1);
+
   while (true) {
 
     al_wait_for_event(queue, &event);
@@ -57,6 +65,9 @@ int main(int ac, char** av) {
 
       redraw = false;
     }
+
+    m.render();
+    m2.render();
   }
 
   al_destroy_font(font);

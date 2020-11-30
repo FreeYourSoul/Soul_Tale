@@ -8,8 +8,9 @@ endif ()
 project(allegro_tmx CXX)
 
 add_library(allegro_tmx INTERFACE)
+add_library(fys::allegro_tmx ALIAS allegro_tmx)
 target_include_directories(allegro_tmx INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/allegro_tmx/allegro_tmx.hh)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_features(allegro_tmx INTERFACE cxx_std_20)
 
 if (BUILD_TESTING)

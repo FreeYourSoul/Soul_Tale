@@ -15,6 +15,7 @@ target_include_directories(Soul_Tale PRIVATE
         ${ALLEGRO_FONT_INCLUDE_DIRS})
 target_link_libraries(Soul_Tale PRIVATE
         ${ALLEGRO_LIBRARIES}
-        ${ALLEGRO_FONT_LIBRARIES})
+        ${ALLEGRO_FONT_LIBRARIES}
+        fys::allegro_tmx)
 target_compile_features(Soul_Tale PRIVATE cxx_std_20)
 

@@ -31,6 +31,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -145,7 +146,7 @@ private:
   tmx::Vector2u m_MapTileSize;// general Tilesize of Map
   tmx::FloatRect m_globalBounds;
 
-  using TextureResource = std::map<std::string, std::unique_ptr<sf::Texture>>;
+  using TextureResource = std::map<std::string, ALLEGRO_BITMAP*>;
   TextureResource m_textureResource;
 
   struct AnimationState {
@@ -189,7 +190,7 @@ private:
           tmx::Logger::log("Chunks using " + ts->getName() + " will not be created", tmx::Logger::Type::Info);
           continue;
         }
-        m_chunkArrays.emplace_back(std::make_unique<ChunkArray>(*tr.find(ts->getImagePath())->second, *ts));
+        m_chunkArrays.emplace_back(std::make_unique<ChunkArray>(tr.find(ts->getImagePath()), *ts));
       }
       std::size_t xPos = static_cast<std::size_t>(position.x / tileSize.x);
       std::size_t yPos = static_cast<std::size_t>(position.y / tileSize.y);
@@ -388,6 +389,13 @@ private:
       }
     }
 
+    void render() {
+      //      states.transform *= getTransform();
+      for (const auto& a : m_chunkArrays) {
+        a->render();
+      }
+    }
+
   private:
     class ChunkArray {
     public:
@@ -395,8 +403,8 @@ private:
       tmx::Vector2u tileSetSize;
       tmx::Vector2u tsTileCount;
       std::uint32_t m_firstGID, m_lastGID;
-      explicit ChunkArray(const sf::Texture& t, const tmx::Tileset& ts)
-          : m_texture(t) {
+      explicit ChunkArray(ALLEGRO_BITMAP* tileset, const tmx::Tileset& ts)
+          : m_texture(tileset) {
         auto texSize = getTextureSize();
         tileSetSize = ts.getTileSize();
         tsTileCount.x = texSize.x / tileSetSize.x;
@@ -417,21 +425,18 @@ private:
           m_vertices.push_back(v);
         }
       }
-      tmx::Vector2f getTextureSize() const { return m_texture.getSize(); }
+      tmx::Vector2f getTextureSize() const { return {10.0, 10.0}; }// todo
+
+      void render() {
+        for (const auto& v : m_vertices) {
+          al_draw_bitmap_region(m_texture, v.position.x, v.position.y, 120, 120, 0,0,0);
+        }
+      }
 
     private:
-      const sf::Texture& m_texture;
+      ALLEGRO_BITMAP* m_texture;
       std::vector<Vertex> m_vertices;
 
-      void draw(sf::RenderTarget& rt, sf::RenderStates states) const override {
-        states.texture = &m_texture;
-#ifndef __ANDROID__
-        rt.draw(m_vertices.data(), m_vertices.size(), sf::Quads, states);
-#endif
-#ifdef __ANDROID__
-        rt.draw(m_vertices.data(), m_vertices.size(), sf::Triangles, states);
-#endif
-      }
     };
 
     std::uint8_t layerOpacity;                              // opacity of the layer
@@ -444,13 +449,6 @@ private:
     std::map<std::uint32_t, tmx::Tileset::Tile> m_animTiles;// animation catalogue
     std::vector<AnimationState> m_activeAnimations;         // Animations to be done in this chunk
     std::vector<ChunkArray::Ptr> m_chunkArrays;
-
-    void draw(sf::RenderTarget& rt, sf::RenderStates states) const override {
-      states.transform *= getTransform();
-      for (const auto& a : m_chunkArrays) {
-        rt.draw(*a, states);
-      }
-    }
   };
 
   std::vector<Chunk::Ptr> m_chunks;
@@ -481,22 +479,10 @@ private:
       maxID = i->getFirstGID();
     }
 
-    sf::Image fallback;
-    fallback.create(2, 2, Magenta);
     for (const auto& ts : usedTileSets) {
       const auto& path = ts->getImagePath();
-      std::unique_ptr<sf::Texture> newTexture = std::make_unique<sf::Texture>();
-      sf::Image img;
-      if (!img.loadFromFile(path)) {
-        newTexture->loadFromImage(fallback);
-      } else {
-        if (ts->hasTransparency()) {
-          auto transparency = ts->getTransparencyColour();
-          img.createMaskFromColor({transparency.r, transparency.g, transparency.b, transparency.a});
-        }
-        newTexture->loadFromImage(img);
-      }
-      m_textureResource.insert(std::make_pair(path, std::move(newTexture)));
+      ALLEGRO_BITMAP* bitmap_ts = al_load_bitmap(path.c_str());
+      auto [it, inserted] = m_textureResource.insert({path, bitmap_ts});
     }
 
     //calculate the number of chunks in the layer
@@ -505,7 +491,7 @@ private:
     m_chunkCount.x = static_cast<std::uint32_t>(std::ceil(bounds.width / m_chunkSize.x));
     m_chunkCount.y = static_cast<std::uint32_t>(std::ceil(bounds.height / m_chunkSize.y));
 
-    tmx::Vector2f tileSize(map.getTileSize().x, map.getTileSize().y);
+    tmx::Vector2u tileSize(map.getTileSize().x, map.getTileSize().y);
 
     for (auto y = 0u; y < m_chunkCount.y; ++y) {
       tmx::Vector2f tileCount(m_chunkSize.x / tileSize.x, m_chunkSize.y / tileSize.y);
@@ -517,39 +503,43 @@ private:
         if ((y + 1) * m_chunkSize.y > bounds.height) {
           tileCount.y = (bounds.height - y * m_chunkSize.y) / map.getTileSize().y;
         }
-        m_chunks.emplace_back(std::make_unique<Chunk>(layer, usedTileSets,
-                                                      tmx::Vector2f(x * m_chunkSize.x, y * m_chunkSize.y), tileCount, tileSize, map.getTileCount().x, m_textureResource, map.getAnimatedTiles()));
+        m_chunks.emplace_back(std::make_unique<Chunk>(
+            layer, usedTileSets,
+            tmx::Vector2f(x * m_chunkSize.x, y * m_chunkSize.y),
+            tileCount,
+            tileSize,
+            map.getTileCount().x,
+            m_textureResource,
+            map.getAnimatedTiles()));
       }
     }
   }
 
-  void updateVisibility(const sf::View& view) const {
-    tmx::Vector2f viewCorner = view.getCenter();
-    viewCorner -= view.getSize() / 2.f;
+  //  void updateVisibility(const sf::View& view) const {
+  //    tmx::Vector2f viewCorner = view.getCenter();
+  //    viewCorner -= view.getSize() / 2.f;
+  //
+  //    int posX = static_cast<int>(std::floor(viewCorner.x / m_chunkSize.x));
+  //    int posY = static_cast<int>(std::floor(viewCorner.y / m_chunkSize.y));
+  //    int posX2 = static_cast<int>(std::ceil((viewCorner.x + view.getSize().x) / m_chunkSize.x));
+  //    int posY2 = static_cast<int>(std::ceil((viewCorner.y + view.getSize().x) / m_chunkSize.y));
+  //
+  //    std::vector<Chunk*> visible;
+  //    for (auto y = posY; y < posY2; ++y) {
+  //      for (auto x = posX; x < posX2; ++x) {
+  //        std::size_t idx = y * int(m_chunkCount.x) + x;
+  //        if (idx >= 0u && idx < m_chunks.size() && !m_chunks[idx]->empty()) {
+  //          visible.push_back(m_chunks[idx].get());
+  //        }
+  //      }
+  //    }
+  //
+  //    std::swap(m_visibleChunks, visible);
+  //  }
 
-    int posX = static_cast<int>(std::floor(viewCorner.x / m_chunkSize.x));
-    int posY = static_cast<int>(std::floor(viewCorner.y / m_chunkSize.y));
-    int posX2 = static_cast<int>(std::ceil((viewCorner.x + view.getSize().x) / m_chunkSize.x));
-    int posY2 = static_cast<int>(std::ceil((viewCorner.y + view.getSize().x) / m_chunkSize.y));
-
-    std::vector<Chunk*> visible;
-    for (auto y = posY; y < posY2; ++y) {
-      for (auto x = posX; x < posX2; ++x) {
-        std::size_t idx = y * int(m_chunkCount.x) + x;
-        if (idx >= 0u && idx < m_chunks.size() && !m_chunks[idx]->empty()) {
-          visible.push_back(m_chunks[idx].get());
-        }
-      }
-    }
-
-    std::swap(m_visibleChunks, visible);
-  }
-
-  void draw(sf::RenderTarget& rt, sf::RenderStates states) const override {
-    //calc view coverage and draw nearest chunks
-    updateVisibility(rt.getView());
+  void render() const {
     for (const auto& c : m_visibleChunks) {
-      rt.draw(*c, states);
+      c->render();
     }
   }
 };
