@@ -8,10 +8,15 @@ endif ()
 project(allegro_tmx CXX)
 
 find_package(tmxlite REQUIRED)
+find_package(PNG REQUIRED)
 
 add_library(allegro_tmx INTERFACE)
 add_library(fys::allegro_tmx ALIAS allegro_tmx)
-target_link_libraries(allegro_tmx INTERFACE ${TMXLITE_LIBRARIES})
+target_link_libraries(allegro_tmx INTERFACE
+        ${PNG_LIBRARIES}
+        ${ALLEGRO_LIBRARIES}
+        ${ALLEGRO_IMG_LIBRARIES}
+        ${TMXLITE_LIBRARIES})
 target_include_directories(allegro_tmx INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${TMXLITE_HEADERS})
