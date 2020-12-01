@@ -30,7 +30,8 @@ int main(int ac, char** av) {
   al_init();
   al_install_keyboard();
 
-  ALLEGRO_TIMER* timer = al_create_timer(1.0 / 30.0);
+  double t = 1.0 / 30.0;
+  ALLEGRO_TIMER* timer = al_create_timer(t);
   ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
   ALLEGRO_DISPLAY* disp = al_create_display(320, 200);
   ALLEGRO_FONT* font = al_create_builtin_font();
@@ -46,8 +47,7 @@ int main(int ac, char** av) {
 
   tmx::Map map;
   map.load("/home/FyS/Project/Soul_Tale/asset/maps/WS00.tmx");
-  allegro_tmx::MapLayer m(map, 0);
-  allegro_tmx::MapLayer m2(map, 1);
+  allegro_tmx::map_displayer m(map, 1);
 
   while (true) {
 
@@ -59,15 +59,12 @@ int main(int ac, char** av) {
       break;
 
     if (redraw && al_is_event_queue_empty(queue)) {
-      al_clear_to_color(al_map_rgb(0, 0, 0));
-      al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
+      m.updateVisibility();
+      m.render();
       al_flip_display();
 
       redraw = false;
     }
-
-    m.render();
-    m2.render();
   }
 
   al_destroy_font(font);

@@ -7,10 +7,14 @@ endif ()
 
 project(allegro_tmx CXX)
 
+find_package(tmxlite REQUIRED)
+
 add_library(allegro_tmx INTERFACE)
 add_library(fys::allegro_tmx ALIAS allegro_tmx)
+target_link_libraries(allegro_tmx INTERFACE ${TMXLITE_LIBRARIES})
 target_include_directories(allegro_tmx INTERFACE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include)
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${TMXLITE_HEADERS})
 target_compile_features(allegro_tmx INTERFACE cxx_std_20)
 
 if (BUILD_TESTING)
