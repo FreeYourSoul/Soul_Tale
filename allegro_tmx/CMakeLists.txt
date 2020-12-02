@@ -12,6 +12,7 @@ find_package(PNG REQUIRED)
 
 add_library(allegro_tmx INTERFACE)
 add_library(fys::allegro_tmx ALIAS allegro_tmx)
+
 target_link_libraries(allegro_tmx INTERFACE
         ${PNG_LIBRARIES}
         ${ALLEGRO_LIBRARIES}
@@ -22,12 +23,7 @@ target_include_directories(allegro_tmx INTERFACE
         ${TMXLITE_HEADERS})
 target_compile_features(allegro_tmx INTERFACE cxx_std_20)
 
-if (BUILD_TESTING)
-    find_package(Catch2 REQUIRED)
-    enable_testing()
-    add_subdirectory(test)
-endif()
-
+add_subdirectory(test)
 
 
 

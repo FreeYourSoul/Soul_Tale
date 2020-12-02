@@ -12,6 +12,7 @@ add_executable(Soul_Tale
 
 target_include_directories(Soul_Tale PRIVATE
         ${ALLEGRO_INCLUDE_DIRS}
+        ${ALLEGRO_IMG_INCLUDE_DIRS}
         ${ALLEGRO_FONT_INCLUDE_DIRS})
 target_link_libraries(Soul_Tale PRIVATE
         ${ALLEGRO_LIBRARIES}

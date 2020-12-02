@@ -6,3 +6,8 @@ else ()
 endif ()
 
 project(allegro_tmx_test CXX)
+
+add_executable(ttt main.cpp test.cpp)
+target_link_libraries(ttt PRIVATE Catch2::Catch2 fys::allegro_tmx)
+target_include_directories(ttt PRIVATE include)
+target_compile_features(ttt PRIVATE cxx_std_20)

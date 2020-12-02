@@ -11,6 +11,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
 find_package(tmxlite REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(Catch2 REQUIRED)
+
+enable_testing()
 
 pkg_check_modules(ALLEGRO REQUIRED allegro-5)
 pkg_check_modules(ALLEGRO_IMG REQUIRED allegro_image-5)

@@ -23,14 +23,12 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_image.h>
 
 #include <allegro_tmx/allegro_tmx.hh>
 
-#define BUFFER_W 2000
-#define BUFFER_H 2000
-#define DISP_SCALE 3
-#define DISP_W (BUFFER_W * DISP_SCALE)
-#define DISP_H (BUFFER_H * DISP_SCALE)
+#define DISP_W 620
+#define DISP_H 480
 
 int main(int ac, char** av) {
 
@@ -38,8 +36,10 @@ int main(int ac, char** av) {
     std::cerr << "An error occurred at init\n";
     return 1;
   }
+  al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
 
   al_install_keyboard();
+  al_init_image_addon();
 
   double t = 1.0 / 30.0;
   ALLEGRO_TIMER* timer = al_create_timer(t);
@@ -51,11 +51,6 @@ int main(int ac, char** av) {
   al_register_event_source(queue, al_get_display_event_source(disp));
   al_register_event_source(queue, al_get_timer_event_source(timer));
 
-  auto *test = al_load_bitmap("Flame@128x128.png");
-
-  if (!test) {
-      std::cout << ">>>"<< strerror(errno) << "\n\n";
-  }
   bool redraw = true;
   ALLEGRO_EVENT event;
 
@@ -63,21 +58,34 @@ int main(int ac, char** av) {
 
   tmx::Map map;
   map.load("/home/FyS/Project/Soul_Tale/asset/maps/WS00.tmx");
-  allegro_tmx::map_displayer m(map);
+  allegro_tmx::map_displayer m(map, al_get_display_width(disp), al_get_display_height(disp), 0.5);
+
+  tmx::Vector2u pos{38, 60};
 
   while (true) {
 
-    al_clear_to_color(al_map_rgb(0,0,0));
-
     al_wait_for_event(queue, &event);
 
-    if (event.type == ALLEGRO_EVENT_TIMER)
+    if (event.type == ALLEGRO_EVENT_TIMER) {
       redraw = true;
-    else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
+    } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+      if (event.keyboard.keycode == ALLEGRO_KEY_UP)
+        --pos.y;
+      else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN)
+        ++pos.y;
+      else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT)
+        --pos.x;
+      else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+        ++pos.x;
+      else
+        break;
+    } else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
       break;
 
     if (redraw && al_is_event_queue_empty(queue)) {
-      m.render();
+      m.render(pos.x, pos.y);
+      al_flip_display();
+
       redraw = false;
     }
   }
