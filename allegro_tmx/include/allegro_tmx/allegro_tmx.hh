@@ -38,6 +38,12 @@
 
 namespace allegro_tmx {
 
+//! Transformation flag to apply on sprites
+struct transformation {
+  float rotate_angle = 0;
+  std::uint8_t flag_flip = 0;
+};
+
 template<typename K, typename V>
 class boundary_map {
 public:
@@ -70,20 +76,22 @@ class map_layer {
 public:
   explicit map_layer(const tmx::TileLayer& tile_layer)
       : _bound(tile_layer.getSize()),
-        _name(tile_layer.getName()),
+        _offset(tile_layer.getOffset().x, tile_layer.getOffset().y),
         _tile_layer(tile_layer) {
   }
 
-  [[nodiscard]] std::optional<std::uint32_t> id_tile_to_render(const tmx::Vector2u& pos) const {
-    if (pos.x < _bound.x && pos.y < _bound.y) {
-      return _tile_layer.getTiles().at(pos.x + (pos.y * _bound.x)).ID;
+  [[nodiscard]] std::optional<std::uint32_t> tile_to_render(const tmx::Vector2u& map_pos) const {
+    if (map_pos.x < _bound.x && map_pos.y < _bound.y) {
+      return _tile_layer.getTiles().at(map_pos.x + (map_pos.y * _bound.x)).ID;
     }
     return std::nullopt;
   }
 
+  [[nodiscard]] const tmx::Vector2i& get_offset() const { return _offset; }
+
 private:
   tmx::Vector2u _bound;
-  const std::string& _name;
+  tmx::Vector2i _offset;
   const tmx::TileLayer& _tile_layer;
 };
 
@@ -144,18 +152,18 @@ public:
   bool operator<(const sprite_sheet& other) const { return _last_gid < other._last_gid; }
   bool operator>(const sprite_sheet& other) const { return _last_gid > other._last_gid; }
 
-  void render(std::uint32_t id_tile, float x, float y) const {
-    al_draw_bitmap(_sprites.at(id_tile), x * _tile_size.x, y * _tile_size.x, 0);
+  void render(std::uint32_t id_tile, float x, float y, const tmx::Vector2i& offset) const {
+    al_draw_bitmap(_sprites.at(id_tile), x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);
   }
 
 private:
-  void define_sprite(std::uint32_t id, std::uint32_t x, std::uint32_t y) {
+  void define_sprite(std::uint32_t id_tile, std::uint32_t x, std::uint32_t y) {
     ALLEGRO_BITMAP* sprite = al_create_sub_bitmap(_sheet, x, y, _tile_size.x, _tile_size.y);
     if (!sprite) {
       std::cerr << "error while loading sprite\n";
       return;
     }
-    _sprites.insert({id, sprite});
+    _sprites.insert({id_tile, sprite});
   }
 
 private:
@@ -169,7 +177,7 @@ private:
 
 class map_displayer {
 public:
-  explicit map_displayer(const tmx::Map& map, std::uint32_t screen_x, std::uint32_t screen_y, float ratio = 1.0) {
+  explicit map_displayer(const tmx::Map& map, std::uint32_t screen_x, std::uint32_t screen_y, float ratio = 1.0) : _ratio(ratio) {
     const auto& layers = map.getLayers();
 
     for (const auto& ts : map.getTilesets()) {
@@ -182,11 +190,11 @@ public:
     al_scale_transform(&transform, ratio, ratio);
     al_use_transform(&transform);
 
-    _screen_tile = {screen_x / static_cast<std::uint32_t>(map.getTileSize().x * ratio) + 1,
-        screen_y / static_cast<std::uint32_t>(map.getTileSize().y * ratio) + 1};
+    _screen_tile = {screen_x / static_cast<std::uint32_t>(map.getTileSize().x * _ratio) + 1,
+                    screen_y / static_cast<std::uint32_t>(map.getTileSize().y * _ratio) + 1};
 
-    std::cout << "with ratio : "<< ratio << " screen x : " << screen_x << " screen y : " << screen_y << "\n";
-    std::cout << "tile ratio : width "<< _screen_tile.x << " height " << _screen_tile.y << "\n";
+    std::cout << "with ratio : " << _ratio << " screen x : " << screen_x << " screen y : " << screen_y << "\n";
+    std::cout << "tile ratio : width " << _screen_tile.x << " height " << _screen_tile.y << "\n";
 
     _globalBounds.width = mapSize.width;
     _globalBounds.height = mapSize.height;
@@ -199,8 +207,6 @@ public:
           && layer->getType() == tmx::Layer::Type::Tile
           && layer->getVisible()) {
         _layers.emplace_back(layer->getLayerAs<tmx::TileLayer>());
-      } else {
-        std::cout << "Not a valid orthogonal layer, nothing will be drawn." << std::endl;
       }
     }
   }
@@ -210,26 +216,23 @@ public:
   map_displayer& operator=(const map_displayer&) = delete;
 
   void render(std::uint32_t position_x, std::uint32_t position_y) const {
-    std::uint32_t to_display_x = 0;
-    std::uint32_t to_display_y = 0;
-    if (position_x > _screen_tile.x) {
-      to_display_x = position_x - (_screen_tile.x / 2);
-    }
-    if (position_y > _screen_tile.y) {
-      to_display_y = position_y - (_screen_tile.y / 2);
-    }
+    std::uint32_t to_display_x = position_x - (_screen_tile.x / 2);
+    std::uint32_t to_display_y = position_y - (_screen_tile.y / 2);
+
     // enable hold to optimize drawing on the multiple sub bitmap deriving the tilesets
     al_hold_bitmap_drawing(true);
 
-    // Looping over all coordinate on the map element to display
-    // We display only the 24x16 sprites around the center given (which is already more than necessary)
-    for (std::uint32_t y = 0; y < _screen_tile.y; ++y) {
-      for (std::uint32_t x = 0; x < _screen_tile.x; ++x) {
+    for (auto& layer : _layers) {
 
-        for (auto& layer : _layers) {
-          if (auto id = layer.id_tile_to_render({to_display_x + x, to_display_y + y});
-              id.has_value() && id.value() > 0) {
-            _tilesets.get(id.value())->second.render(id.value(), x, y);
+      // Looping over all coordinate on the map element to display
+      // We display only the 24x16 sprites around the center given (which is already more than necessary)
+      for (std::uint32_t y = 0; y < _screen_tile.y; ++y) {
+        for (std::uint32_t x = 0; x < _screen_tile.x; ++x) {
+
+          if (auto tile_to_render = layer.tile_to_render({to_display_x + x, to_display_y + y});
+              tile_to_render.has_value() && tile_to_render.value() > 0) {
+            const auto tile_id = tile_to_render.value();
+            _tilesets.get(tile_id)->second.render(tile_id, x, y, layer.get_offset());
           }
         }
       }
@@ -240,6 +243,8 @@ public:
   }
 
 private:
+  float _ratio;
+
   tmx::Vector2u _map_tile_count;// general Tilesize of Map
   tmx::Vector2u _screen_tile;
   tmx::FloatRect _globalBounds;

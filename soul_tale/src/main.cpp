@@ -27,8 +27,11 @@
 
 #include <allegro_tmx/allegro_tmx.hh>
 
-#define DISP_W 620
-#define DISP_H 480
+static constexpr std::uint32_t DISP_W = 620;
+static constexpr std::uint32_t DISP_H = 480;
+
+static constexpr int KEY_SEEN = 1;
+static constexpr int KEY_RELEASED = 2;
 
 int main(int ac, char** av) {
 
@@ -62,25 +65,51 @@ int main(int ac, char** av) {
 
   tmx::Vector2u pos{38, 60};
 
-  while (true) {
+  unsigned char key[ALLEGRO_KEY_MAX];
+  memset(key, 0, sizeof(key));
+
+  bool done = false;
+  while (!done) {
 
     al_wait_for_event(queue, &event);
 
-    if (event.type == ALLEGRO_EVENT_TIMER) {
-      redraw = true;
-    } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-      if (event.keyboard.keycode == ALLEGRO_KEY_UP)
+    switch (event.type) {
+    case ALLEGRO_EVENT_TIMER:
+
+      if (key[ALLEGRO_KEY_UP]) {
         --pos.y;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN)
+      }
+      else if (key[ALLEGRO_KEY_DOWN]) {
         ++pos.y;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT)
+      }
+      else if (key[ALLEGRO_KEY_LEFT]) {
         --pos.x;
-      else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+      }
+      else if (key[ALLEGRO_KEY_RIGHT]) {
         ++pos.x;
-      else
-        break;
-    } else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
+      }
+      else if (key[ALLEGRO_KEY_ESCAPE]) {
+        done = true;
+      }
+
+      for (unsigned char& i : key) {
+        i &= KEY_SEEN;
+      }
+
+      redraw = true;
       break;
+
+    case ALLEGRO_EVENT_KEY_DOWN:
+      key[event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
+      break;
+    case ALLEGRO_EVENT_KEY_UP:
+      key[event.keyboard.keycode] &= KEY_RELEASED;
+      break;
+
+    case ALLEGRO_EVENT_DISPLAY_CLOSE:
+      done = true;
+      break;
+    }
 
     if (redraw && al_is_event_queue_empty(queue)) {
       m.render(pos.x, pos.y);
