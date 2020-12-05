@@ -54,6 +54,8 @@ int main(int ac, char** av) {
   al_register_event_source(queue, al_get_display_event_source(disp));
   al_register_event_source(queue, al_get_timer_event_source(timer));
 
+  al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+
   bool redraw = true;
   ALLEGRO_EVENT event;
 

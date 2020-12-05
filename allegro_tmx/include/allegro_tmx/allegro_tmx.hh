@@ -154,6 +154,10 @@ public:
 
   void render(std::uint32_t id_tile, float x, float y, const tmx::Vector2i& offset) const {
     al_draw_bitmap(_sprites.at(id_tile), x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);
+
+    // Tinting (night style ?)
+//    al_draw_tinted_bitmap(_sprites.at(id_tile), al_map_rgba_f(0, 0, 0, 0.30f),
+//                          x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);(
   }
 
 private:
