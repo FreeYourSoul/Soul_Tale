@@ -25,7 +25,9 @@
 #define SOUL_TALE_ALLEGRO_TMX_INCLUDE_ALLEGRO_TMX_ALLEGRO_TMX_HH
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
+#include <numeric>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -156,8 +158,8 @@ public:
     al_draw_bitmap(_sprites.at(id_tile), x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);
 
     // Tinting (night style ?)
-//    al_draw_tinted_bitmap(_sprites.at(id_tile), al_map_rgba_f(0, 0, 0, 0.30f),
-//                          x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);(
+    //al_draw_tinted_bitmap(_sprites.at(id_tile), al_map_rgba_f(0, 0, 0, 0.30f),
+    //                    x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);(
   }
 
 private:
@@ -194,10 +196,10 @@ public:
     al_scale_transform(&transform, ratio, ratio);
     al_use_transform(&transform);
 
-    _screen_tile = {screen_x / static_cast<std::uint32_t>(map.getTileSize().x * _ratio) + 1,
-                    screen_y / static_cast<std::uint32_t>(map.getTileSize().y * _ratio) + 1};
+    _tile_size = tmx::Vector2u(static_cast<std::uint32_t>(map.getTileSize().x * _ratio),
+                               static_cast<std::uint32_t>(map.getTileSize().y * _ratio));
+    _screen_tile = {screen_x / _tile_size.x + 1, screen_y / _tile_size.y + 1};
 
-    std::cout << "with ratio : " << _ratio << " screen x : " << screen_x << " screen y : " << screen_y << "\n";
     std::cout << "tile ratio : width " << _screen_tile.x << " height " << _screen_tile.y << "\n";
 
     _globalBounds.width = mapSize.width;
@@ -219,9 +221,23 @@ public:
   map_displayer(const map_displayer&) = delete;
   map_displayer& operator=(const map_displayer&) = delete;
 
-  void render(std::uint32_t position_x, std::uint32_t position_y) const {
-    std::uint32_t to_display_x = position_x - (_screen_tile.x / 2);
-    std::uint32_t to_display_y = position_y - (_screen_tile.y / 2);
+  [[nodiscard]] tmx::Vector2i make_offset(float to_disp_x, float to_disp_y, const tmx::Vector2i& layer_offset) const {
+    std::uint32_t x_positional_offset = (to_disp_x - static_cast<std::uint32_t>(to_disp_x)) * 100.000f;
+    std::uint32_t y_positional_offset = (to_disp_y - static_cast<std::uint32_t>(to_disp_y)) * 100.000f;
+
+    // Dirty fix of the imprecision..
+    if (x_positional_offset == 9) {
+      x_positional_offset = 10;
+    }
+    if (y_positional_offset == 9) {
+      y_positional_offset = 10;
+    }
+    return tmx::Vector2i(layer_offset.x - x_positional_offset, layer_offset.y - y_positional_offset);
+  }
+
+  void render(float position_x, float position_y) const {
+    float to_display_x = position_x - std::midpoint(0.f, float(_screen_tile.x));
+    float to_display_y = position_y - std::midpoint(0.f, float(_screen_tile.y));
 
     // enable hold to optimize drawing on the multiple sub bitmap deriving the tilesets
     al_hold_bitmap_drawing(true);
@@ -233,10 +249,11 @@ public:
       for (std::uint32_t y = 0; y < _screen_tile.y; ++y) {
         for (std::uint32_t x = 0; x < _screen_tile.x; ++x) {
 
-          if (auto tile_to_render = layer.tile_to_render({to_display_x + x, to_display_y + y});
+          if (auto tile_to_render = layer.tile_to_render({std::uint32_t(to_display_x) + x, std::uint32_t(to_display_y) + y});
               tile_to_render.has_value() && tile_to_render.value() > 0) {
             const auto tile_id = tile_to_render.value();
-            _tilesets.get(tile_id)->second.render(tile_id, x, y, layer.get_offset());
+            _tilesets.get(tile_id)->second.render(
+                tile_id, x, y, make_offset(to_display_x, to_display_y, layer.get_offset()));
           }
         }
       }
@@ -251,6 +268,8 @@ private:
 
   tmx::Vector2u _map_tile_count;// general Tilesize of Map
   tmx::Vector2u _screen_tile;
+  tmx::Vector2u _tile_size;
+
   tmx::FloatRect _globalBounds;
 
   boundary_map<std::uint32_t, sprite_sheet> _tilesets;

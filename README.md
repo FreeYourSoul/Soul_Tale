@@ -1,3 +1,10 @@
+[![HitCount](http://hits.dwyl.io/FreeYourSoul/Soul_Tale.svg)](http://hits.dwyl.io/FreeYourSoul/Soul_Tale)
+![Last commit](https://img.shields.io/github/last-commit/FreeYourSoul/Soul_Tale.svg)
+
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/FreeYourSoul/Soul_Tale/master/LICENSE)
+[![Scc Count Badge](https://sloc.xyz/github/FreeYourSoul/Soul_Tale/)](https://github.com/FreeYourSoul/Soul_Tale/)
+[![Scc Count Badge](https://sloc.xyz/github/FreeYourSoul/Soul_Tale/?category=code)](https://github.com/FreeYourSoul/Soul_Tale/)
+
 # FyS Client : Free Tale
 
 More details about the development of Free Tales is present on [my blog](http://freeyoursoul.online). 

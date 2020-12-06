@@ -9,19 +9,13 @@ in with pkgs; rec {
       rev = "9a38ffe32a7cd709efe56bf7f05255259acb95a0";
     });
 
-  fseam = (callPackage (builtins.fetchurl
-    "https://raw.githubusercontent.com/FreeYourSoul/FSeam/9f0ca84beab1b4c6152238820029450d589f319d/fseam-recipee.nix") {
-      rev = "9f0ca84beab1b4c6152238820029450d589f319d";
-    });
-
   # External Dependencies (not default nixpkg)
   nlohmann_json = (callPackage ./nix/dependency/nlohmann_json.nix) { };
   tmxlite = (callPackage ./nix/dependency/tmxlite.nix) { };
   cppzmq = (callPackage ./nix/dependency/cppzmq.nix) { };
-  sol3 = (callPackage ./nix/dependency/sol3.nix) { };
 
   # Soul_Tale Dependencies
   soul_tale = (callPackage ./nix/recipes/soul_tale.nix) {
-    inherit stdenv fil nlohmann_json fseam chaiscript cppzmq;
+    inherit stdenv fil nlohmann_json tmxlite cppzmq;
   };
 }
