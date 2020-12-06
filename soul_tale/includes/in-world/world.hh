@@ -37,12 +37,22 @@ class network_manager;
 namespace fys::st {
 
 class world {
+  struct internal;
+
 public:
+  ~world();
+  world();
+  world(world&&) noexcept = default;
+  world(const world&) = delete;
+  world& operator=(world&&) noexcept = default;
+  world& operator=(const world&) = delete;
+
   void render();
 
-  [[nodiscard]] bool execute_event(ALLEGRO_EVENT event, std::shared_ptr<network_manager>& net);
+  [[nodiscard]] bool execute_event(std::shared_ptr<network_manager>& net);
 
 private:
+  std::unique_ptr<internal> _intern;
 };
 
 }// namespace fys::st

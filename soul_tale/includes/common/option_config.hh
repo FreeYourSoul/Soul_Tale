@@ -34,11 +34,6 @@ static constexpr std::uint32_t disp_h = 480;
 //! refresh rate in frame per seconds
 static constexpr double refresh_rate = 1.0 / 60.0;
 
-//
-// Used as bit mask for the key pressing
-//
-static constexpr int KEY_SEEN = 1;
-static constexpr int KEY_RELEASED = 2;
 }
 
 namespace fys::st {

@@ -24,9 +24,24 @@
 #ifndef SOUL_TALE_SOUL_TALE_SRC_HUD_TERMINAL_HH
 #define SOUL_TALE_SOUL_TALE_SRC_HUD_TERMINAL_HH
 
+#include <widgetz/widgetz.h>
+
 namespace fys::st::hud {
 
 class terminal {
+  struct internal;
+
+public:
+  ~terminal();
+  explicit terminal(ALLEGRO_EVENT_QUEUE* event_queue);
+
+  void execute_event(ALLEGRO_EVENT event);
+
+  void render();
+
+private:
+  std::unique_ptr<internal> _intern;
+
 };
 
 }

@@ -11,6 +11,7 @@ project(Soul_Tale CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
+find_package(fmt REQUIRED)
 find_package(tmxlite REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Catch2 REQUIRED)

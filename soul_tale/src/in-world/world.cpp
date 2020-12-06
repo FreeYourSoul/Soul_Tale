@@ -21,15 +21,72 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <allegro_tmx/allegro_tmx.hh>
+
+#include <common/game_context.hh>
 #include <in-world/world.hh>
+
+namespace {
+struct mapping_map {
+  tmx::Rectangle<std::uint64_t> influence;
+  std::string _map_id;
+
+  [[nodiscard]] bool is_current(std::uint32_t pos_x, std::uint32_t pos_y) const {
+    return pos_x >= influence.left && pos_x <= (influence.left + influence.width)
+        && pos_y <= influence.top && pos_y <= (influence.top + influence.height);
+  }
+};
+}// namespace
 
 namespace fys::st {
 
+struct world::internal {
+
+  //! mapping of the world position with the allegro_tmx::map
+  std::vector<mapping_map> position_mapping;
+  //! loaded map
+  std::vector<allegro_tmx::map_displayer> map;
+  std::unordered_map<std::string, tmx::Map> tmx_map;
+  std::uint32_t current = 0u;
+
+  //! character x world pos
+  tmx::Vector2<double> pos{38., 60.};
+
+};
+
+world::~world() = default;
+
+world::world() : _intern(std::make_unique<internal>()) {
+  // Map handling
+  _intern->tmx_map["WS00"].load("/home/FyS/Project/Soul_Tale/asset/maps/WS00.tmx");
+  _intern->map.emplace_back(_intern->tmx_map.at("WS00"),
+                            game_context::get().disp_x(),
+                            game_context::get().disp_y(),
+                            game_context::get().ratio());
+}
+
 void world::render() {
+  auto& map = _intern->map.at(_intern->current);
+  //  auto& position_mapping = _intern->position_mapping.at(_intern->current);
+
+  map.render(float(_intern->pos.x), float(_intern->pos.y));
 }
 
-bool world::execute_event(ALLEGRO_EVENT event, std::shared_ptr<network_manager>& net) {
-  return true;
+bool world::execute_event(std::shared_ptr<network_manager>& net) {
+  auto& key = game_context::get().key;
+  auto& km = game_context::get().get_key_map();
+
+  if (key[km.move_up]) {
+    _intern->pos.y -= .100;
+  } else if (key[km.move_down]) {
+    _intern->pos.y += .100;
+  }
+  if (key[km.move_left]) {
+    _intern->pos.x -= .100;
+  } else if (key[km.move_right]) {
+    _intern->pos.x += .100;
+  }
+  return false;
 }
 
-}
+}// namespace fys::st

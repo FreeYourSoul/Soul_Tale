@@ -21,7 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <in-world/character_entity_manager.hh>
+#include <in-world/entity_manager.hh>
 
 namespace fys::st {
 }

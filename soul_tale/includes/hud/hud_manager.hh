@@ -24,9 +24,22 @@
 #ifndef SOUL_TALE_SOUL_TALE_SRC_HUD_HUD_HH
 #define SOUL_TALE_SOUL_TALE_SRC_HUD_HUD_HH
 
-namespace fys::st::ui {
+#include <memory>
 
-class hud {
+namespace fys::st::hud {
+
+class hud_manager {
+  struct internal;
+
+public:
+  ~hud_manager();
+  explicit hud_manager(ALLEGRO_EVENT_QUEUE* event_queue);
+
+  void execute_event(ALLEGRO_EVENT event);
+  void render();
+
+private:
+  std::unique_ptr<internal> _intern;
 };
 
 }

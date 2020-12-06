@@ -79,6 +79,7 @@ public:
   explicit map_layer(const tmx::TileLayer& tile_layer)
       : _bound(tile_layer.getSize()),
         _offset(tile_layer.getOffset().x, tile_layer.getOffset().y),
+        _name(tile_layer.getName()),
         _tile_layer(tile_layer) {
   }
 
@@ -94,6 +95,7 @@ public:
 private:
   tmx::Vector2u _bound;
   tmx::Vector2i _offset;
+  std::string_view _name;
   const tmx::TileLayer& _tile_layer;
 };
 
@@ -218,6 +220,8 @@ public:
   }
 
   ~map_displayer() = default;
+  map_displayer(map_displayer&&) noexcept = default;
+  map_displayer& operator=(map_displayer&&) noexcept = default;
   map_displayer(const map_displayer&) = delete;
   map_displayer& operator=(const map_displayer&) = delete;
 
@@ -238,6 +242,13 @@ public:
   void render(float position_x, float position_y) const {
     float to_display_x = position_x - std::midpoint(0.f, float(_screen_tile.x));
     float to_display_y = position_y - std::midpoint(0.f, float(_screen_tile.y));
+
+    if (to_display_x < .0) {
+      to_display_x = .0;
+    }
+    if (to_display_y < .0) {
+      to_display_y = .0;
+    }
 
     // enable hold to optimize drawing on the multiple sub bitmap deriving the tilesets
     al_hold_bitmap_drawing(true);

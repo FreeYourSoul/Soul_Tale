@@ -28,8 +28,8 @@ namespace fys::st {
 void arena::render() {
 }
 
-bool st::arena::execute_event(ALLEGRO_EVENT event, std::shared_ptr<network_manager>& net) {
-  return true;
+bool st::arena::execute_event(std::shared_ptr<network_manager>& net) {
+  return false;
 }
 
 }

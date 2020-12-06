@@ -21,23 +21,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <exception>
-
 #include <spdlog/spdlog.h>
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
 
-#include <allegro_tmx/allegro_tmx.hh>
 #include <widgetz/widgetz.h>
 
+#include <common/game_context.hh>
 #include <common/option_config.hh>
 #include <in-arena/arena.hh>
 #include <in-world/world.hh>
 
 #include <engine_manager.hh>
+#include <hud/hud_manager.hh>
 
 namespace {
 
@@ -47,6 +44,12 @@ void check_instantiation(void* ptr, const std::string& component) {
     throw std::runtime_error(component);
   }
 }
+
+//
+// Used as bit mask for the key pressing
+//
+constexpr int KEY_SEEN = 1;
+constexpr int KEY_RELEASED = 2;
 
 }// namespace
 
@@ -59,28 +62,41 @@ struct engine_manager::internal {
   ALLEGRO_DISPLAY* disp = nullptr;
   ALLEGRO_FONT* font = nullptr;
 
-  std::unique_ptr<world> world = nullptr;
-  std::unique_ptr<arena> arena = nullptr;
+  std::unique_ptr<hud::hud_manager> hud;
+
+  std::unique_ptr<world> world_instance = nullptr;
+  std::unique_ptr<arena> arena_instance = nullptr;
+
+  void setup_context() const {
+    auto& ctx = game_context::get();
+    ctx._ratio = .5f;
+    ctx._display_x = al_get_display_width(disp);
+    ctx._display_y = al_get_display_height(disp);
+    ctx._key_map = key_map::from_config("");
+  }
 
   [[nodiscard("inf loop if not used")]] bool
   execute_event(ALLEGRO_EVENT event, std::shared_ptr<network_manager>& net) const {
 
-    if (arena != nullptr) {
-      return arena->execute_event(event, net);
+    hud->execute_event(event);
+
+    if (arena_instance != nullptr) {
+      return arena_instance->execute_event(net);
     }
-    if (world != nullptr) {
-      return world->execute_event(event, net);
+    if (world_instance != nullptr) {
+      return world_instance->execute_event(net);
     }
     SPDLOG_ERROR("Neither arena nor world is set in the engine");
-    return false;
+    return true;
   }
 
   void execute_rendering() const {
-    if (arena != nullptr) {
-      arena->render();
-    } else if (world != nullptr) {
-      world->render();
+    if (arena_instance != nullptr) {
+      arena_instance->render();
+    } else if (world_instance != nullptr) {
+      world_instance->render();
     }
+    hud->render();
   }
 };
 
@@ -90,43 +106,29 @@ engine_manager::~engine_manager() {
   al_destroy_event_queue(_internal->queue);
   al_destroy_display(_internal->disp);
   al_destroy_font(_internal->font);
-
-  al_uninstall_keyboard();
-  al_shutdown_font_addon();
-  al_shutdown_image_addon();
-  al_shutdown_primitives_addon();
-
-  //  wz_destroy_skin_theme(&skin_theme);
-  //  wz_destroy(gui);
 }
 
 engine_manager::engine_manager() : _internal(std::make_unique<internal>()) {
-  if (!al_init()) {
-    SPDLOG_ERROR("An error occurred at init\n");
-    throw std::runtime_error("al_init");
-  }
+
   _internal->timer = al_create_timer(config::refresh_rate);
   _internal->queue = al_create_event_queue();
   _internal->disp = al_create_display(config::disp_w, config::disp_h);
   _internal->font = al_create_builtin_font();
+  _internal->hud = std::make_unique<hud::hud_manager>(_internal->queue);
 
   check_instantiation(_internal->timer, "create_timer");
   check_instantiation(_internal->queue, "create_event_queue");
   check_instantiation(_internal->disp, "create_display");
   check_instantiation(_internal->font, "create_builtin_font");
 
-  al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
-
-  al_install_keyboard();
-  al_init_font_addon();
-  al_init_image_addon();
-  al_init_primitives_addon();
-
   al_register_event_source(_internal->queue, al_get_keyboard_event_source());
   al_register_event_source(_internal->queue, al_get_display_event_source(_internal->disp));
   al_register_event_source(_internal->queue, al_get_timer_event_source(_internal->timer));
 
-  al_set_blender(ALLEGRO_ADD, ALLEGRO_ALPHA, ALLEGRO_INVERSE_ALPHA);
+  _internal->setup_context();
+
+  // temporary map creation
+  _internal->world_instance = std::make_unique<world>();
 }
 
 void engine_manager::run(const std::string& user_name, std::shared_ptr<network_manager> net) {
@@ -139,8 +141,31 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
   while (!done) {
     al_wait_for_event(_internal->queue, &event);
 
-    done = _internal->execute_event(event, net);
+    switch (auto& key = game_context::get().key; event.type) {
+    case ALLEGRO_EVENT_TIMER:
+      for (unsigned char& i : key) {
+        i &= KEY_SEEN;
+      }
+      redraw = true;
 
+      // execute event on the current screen manager
+      done = _internal->execute_event(event, net);
+
+      break;
+
+    // handle keys pressure
+    case ALLEGRO_EVENT_KEY_DOWN:
+      key[event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
+      break;
+    case ALLEGRO_EVENT_KEY_UP:
+      key[event.keyboard.keycode] &= KEY_RELEASED;
+      break;
+    case ALLEGRO_EVENT_DISPLAY_CLOSE:
+      done = true;
+      break;
+    }
+
+    // rendering
     if (redraw && al_is_event_queue_empty(_internal->queue)) {
       _internal->execute_rendering();
       al_flip_display();

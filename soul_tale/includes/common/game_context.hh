@@ -26,13 +26,18 @@
 
 #include <memory>
 
+#include <allegro5/allegro5.h>
+#include <engine_manager.hh>
+#include <hud/terminal.hh>
+
 #include "key_map.hh"
 #include "option_config.hh"
 
 namespace fys::st {
 
 class game_context {
-  friend ui::terminal;
+  friend hud::terminal;
+  friend engine_manager;
 
 public:
   static game_context& get() {
@@ -40,8 +45,15 @@ public:
     return ctx;
   }
 
+  //! key pressed (used for to detect which keys has been pressed
+  unsigned char key[ALLEGRO_KEY_MAX]{};
+
   [[nodiscard]] const std::string& user_name() const { return _user_name; }
   [[nodiscard]] const key_map& get_key_map() const { return _key_map; }
+
+  [[nodiscard]] int disp_x() const { return _display_x; }
+  [[nodiscard]] int disp_y() const { return _display_y; }
+  [[nodiscard]] float ratio() const { return _ratio; }
 
 private:
   game_context() = default;
@@ -49,11 +61,15 @@ private:
 private:
   std::string _user_name;
 
-  key_map _key_map;
+  key_map _key_map{};
+
   option_config _config;
 
+  int _display_x{0};
+  int _display_y{0};
+  float _ratio{0.5};
 };
 
-}
+}// namespace fys::st
 
 #endif//SOUL_TALE_SOUL_TALE_SRC_PLAYER_CONTEXT_HH

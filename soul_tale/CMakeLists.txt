@@ -12,6 +12,7 @@ add_executable(Soul_Tale
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/chat_ui.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/perf_ui.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/terminal.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/hud_manager.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/user_info_ui.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/in-arena/arena.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/in-world/world.cpp
@@ -29,6 +30,7 @@ add_executable(Soul_Tale
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/hud/chat_ui.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/hud/perf_ui.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/hud/terminal.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/includes/hud/hud_manager.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/hud/user_info_ui.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/in-arena/arena.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/includes/in-world/world.hh
@@ -48,6 +50,7 @@ target_link_libraries(Soul_Tale PRIVATE
         ${ALLEGRO_IMG_LIBRARIES}
         ${ALLEGRO_FONT_LIBRARIES}
         ${ALLEGRO_PRIMITIVES_LIBRARIES}
+        fmt::fmt
         widgetz
         fys::allegro_tmx)
 target_compile_features(Soul_Tale PRIVATE cxx_std_20)

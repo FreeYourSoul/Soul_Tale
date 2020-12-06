@@ -21,45 +21,67 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <fmt/format.h>
+#include <functional>
+
+#include <widgetz/widgetz.h>
 
 #include <common/game_context.hh>
-
+#include <hud/hud_manager.hh>
 #include <hud/terminal.hh>
 
 namespace fys::st::hud {
 
-struct terminal::internal {
-  WZ_WIDGET* widget = nullptr;
-  WZ_DEF_THEME theme;
+struct hud_manager::internal {
 
-  WZ_WIDGET* command_line_wgt = nullptr;
+  explicit internal(ALLEGRO_EVENT_QUEUE* event_queue)
+      : terminal_hud(event_queue) {
 
-  std::string terminal_content = fmt::format("Terminal Session : version 1.0.0-DEV\n");
+    registered_hud = {
+
+        // terminal hud
+        [this](std::optional<ALLEGRO_EVENT> event) mutable {
+          if (!terminal_enabled) {
+            if (event.has_value()) {
+              terminal_hud.execute_event(event.value());
+            } else {
+              terminal_hud.render();
+            }
+          }
+        },
+
+    };
+  }
+
+  hud::terminal terminal_hud;
+
+  std::vector<std::function<void(std::optional<ALLEGRO_EVENT>)>> registered_hud;
+
+  bool terminal_enabled = false;
+  void enable_dev_terminal() {
+    terminal_enabled = !terminal_enabled;
+  }
 };
 
-terminal::~terminal() = default;
+hud_manager::~hud_manager() = default;
 
-terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<internal>()) {
-  auto& ctx = game_context::get();
-
-  _intern->widget = wz_create_widget(nullptr, 0, 0, -1);
-  wz_set_theme(_intern->widget, (WZ_THEME*)&_intern->theme);
-
-  wz_create_textbox(_intern->widget, 0, 0, float(ctx.disp_x()), float(ctx.disp_y()) / 3.f, WZ_ALIGN_LEFT, WZ_ALIGN_TOP,
-                    al_ustr_new(_intern->terminal_content.c_str()), 1, -1);
-
-  _intern->command_line_wgt = (WZ_WIDGET*)wz_create_editbox(_intern->widget, 0, 0, 200, 50, al_ustr_new(""), 1, 1);
-
-  wz_register_sources(_intern->widget, event_queue);
+hud_manager::hud_manager(ALLEGRO_EVENT_QUEUE* event_queue)
+    : _intern(std::make_unique<internal>(event_queue)) {
 }
 
-void terminal::render() {
-  wz_draw(_intern->widget);
+void hud_manager::execute_event(ALLEGRO_EVENT event) {
+
+  if (event.type == game_context::get().get_key_map().open_dev_terminal) {
+    _intern->enable_dev_terminal();
+  }
+  for (auto& hud : _intern->registered_hud) {
+    hud(event);
+  }
 }
 
-void terminal::execute_event(ALLEGRO_EVENT event) {
-  wz_send_event(_intern->widget, &event);
+void hud_manager::render() {
+  for (auto& hud : _intern->registered_hud) {
+    hud(std::nullopt);
+  }
 }
 
 }// namespace fys::st::hud
