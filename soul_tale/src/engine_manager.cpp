@@ -75,19 +75,17 @@ struct engine_manager::internal {
     ctx._key_map = key_map::from_config("");
   }
 
-  [[nodiscard("inf loop if not used")]] bool
-  execute_event(ALLEGRO_EVENT event, std::shared_ptr<network_manager>& net) const {
-
-    hud->execute_event(event);
+  void execute_event(ALLEGRO_EVENT, std::shared_ptr<network_manager>& net) const {
 
     if (arena_instance != nullptr) {
-      return arena_instance->execute_event(net);
+      arena_instance->execute_event(net);
+      return;
     }
     if (world_instance != nullptr) {
-      return world_instance->execute_event(net);
+      world_instance->execute_event(net);
+      return;
     }
     SPDLOG_ERROR("Neither arena nor world is set in the engine");
-    return true;
   }
 
   void execute_rendering() const {
@@ -101,7 +99,6 @@ struct engine_manager::internal {
 };
 
 engine_manager::~engine_manager() {
-
   al_destroy_timer(_internal->timer);
   al_destroy_event_queue(_internal->queue);
   al_destroy_display(_internal->disp);
@@ -114,6 +111,9 @@ engine_manager::engine_manager() : _internal(std::make_unique<internal>()) {
   _internal->queue = al_create_event_queue();
   _internal->disp = al_create_display(config::disp_w, config::disp_h);
   _internal->font = al_create_builtin_font();
+
+  _internal->setup_context();
+
   _internal->hud = std::make_unique<hud::hud_manager>(_internal->queue);
 
   check_instantiation(_internal->timer, "create_timer");
@@ -125,7 +125,6 @@ engine_manager::engine_manager() : _internal(std::make_unique<internal>()) {
   al_register_event_source(_internal->queue, al_get_display_event_source(_internal->disp));
   al_register_event_source(_internal->queue, al_get_timer_event_source(_internal->timer));
 
-  _internal->setup_context();
 
   // temporary map creation
   _internal->world_instance = std::make_unique<world>();
@@ -147,15 +146,14 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
         i &= KEY_SEEN;
       }
       redraw = true;
-
-      // execute event on the current screen manager
-      done = _internal->execute_event(event, net);
-
+      _internal->execute_event(event, net);
       break;
 
     // handle keys pressure
     case ALLEGRO_EVENT_KEY_DOWN:
       key[event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
+      // execute event on the current screen manager
+      _internal->hud->execute_event(event);
       break;
     case ALLEGRO_EVENT_KEY_UP:
       key[event.keyboard.keycode] &= KEY_RELEASED;

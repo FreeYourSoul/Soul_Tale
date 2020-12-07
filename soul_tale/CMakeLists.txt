@@ -43,11 +43,13 @@ target_include_directories(Soul_Tale PRIVATE
         includes
         ${ALLEGRO_INCLUDE_DIRS}
         ${ALLEGRO_IMG_INCLUDE_DIRS}
+        ${ALLEGRO_TTF_INCLUDE_DIRS}
         ${ALLEGRO_PRIMITIVES_INCLUDE_DIRS}
         ${ALLEGRO_FONT_INCLUDE_DIRS})
 target_link_libraries(Soul_Tale PRIVATE
         ${ALLEGRO_LIBRARIES}
         ${ALLEGRO_IMG_LIBRARIES}
+        ${ALLEGRO_TTF_LIBRARIES}
         ${ALLEGRO_FONT_LIBRARIES}
         ${ALLEGRO_PRIMITIVES_LIBRARIES}
         fmt::fmt

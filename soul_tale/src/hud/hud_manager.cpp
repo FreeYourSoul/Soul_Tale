@@ -23,6 +23,8 @@
 
 #include <functional>
 
+#include <spdlog/spdlog.h>
+
 #include <widgetz/widgetz.h>
 
 #include <common/game_context.hh>
@@ -40,7 +42,7 @@ struct hud_manager::internal {
 
         // terminal hud
         [this](std::optional<ALLEGRO_EVENT> event) mutable {
-          if (!terminal_enabled) {
+          if (terminal_enabled) {
             if (event.has_value()) {
               terminal_hud.execute_event(event.value());
             } else {
@@ -59,6 +61,7 @@ struct hud_manager::internal {
   bool terminal_enabled = false;
   void enable_dev_terminal() {
     terminal_enabled = !terminal_enabled;
+    SPDLOG_INFO("Terminal button pressed : {}", terminal_enabled);
   }
 };
 
@@ -70,7 +73,8 @@ hud_manager::hud_manager(ALLEGRO_EVENT_QUEUE* event_queue)
 
 void hud_manager::execute_event(ALLEGRO_EVENT event) {
 
-  if (event.type == game_context::get().get_key_map().open_dev_terminal) {
+  if (event.type == ALLEGRO_EVENT_KEY_DOWN
+      && event.keyboard.keycode == game_context::get().get_key_map().open_dev_terminal) {
     _intern->enable_dev_terminal();
   }
   for (auto& hud : _intern->registered_hud) {

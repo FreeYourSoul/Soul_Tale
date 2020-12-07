@@ -49,7 +49,7 @@ public:
 
   void render();
 
-  [[nodiscard]] bool execute_event(std::shared_ptr<network_manager>& net);
+  void execute_event(std::shared_ptr<network_manager>& net);
 
 private:
   std::unique_ptr<internal> _intern;

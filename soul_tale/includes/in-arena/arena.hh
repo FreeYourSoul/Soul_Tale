@@ -42,7 +42,7 @@ class arena {
 public:
   void render();
 
-  [[nodiscard]] static bool execute_event(std::shared_ptr<network_manager>& net);
+  static void execute_event(std::shared_ptr<network_manager>& net);
 
 private:
 };

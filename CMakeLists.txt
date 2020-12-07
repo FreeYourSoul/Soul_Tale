@@ -20,6 +20,7 @@ enable_testing()
 
 pkg_check_modules(ALLEGRO REQUIRED allegro-5)
 pkg_check_modules(ALLEGRO_IMG REQUIRED allegro_image-5)
+pkg_check_modules(ALLEGRO_TTF REQUIRED allegro_ttf-5)
 pkg_check_modules(ALLEGRO_FONT REQUIRED allegro_font-5)
 pkg_check_modules(ALLEGRO_PRIMITIVES REQUIRED allegro_primitives-5)
 

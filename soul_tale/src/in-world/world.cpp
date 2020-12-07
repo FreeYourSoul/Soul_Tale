@@ -72,7 +72,7 @@ void world::render() {
   map.render(float(_intern->pos.x), float(_intern->pos.y));
 }
 
-bool world::execute_event(std::shared_ptr<network_manager>& net) {
+void world::execute_event(std::shared_ptr<network_manager>& net) {
   auto& key = game_context::get().key;
   auto& km = game_context::get().get_key_map();
 
@@ -86,7 +86,6 @@ bool world::execute_event(std::shared_ptr<network_manager>& net) {
   } else if (key[km.move_right]) {
     _intern->pos.x += .100;
   }
-  return false;
 }
 
 }// namespace fys::st
