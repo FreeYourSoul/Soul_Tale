@@ -122,9 +122,12 @@ engine_manager::engine_manager() : _internal(std::make_unique<internal>()) {
   check_instantiation(_internal->font, "create_builtin_font");
 
   al_register_event_source(_internal->queue, al_get_keyboard_event_source());
+  al_register_event_source(_internal->queue, al_get_mouse_event_source());
   al_register_event_source(_internal->queue, al_get_display_event_source(_internal->disp));
   al_register_event_source(_internal->queue, al_get_timer_event_source(_internal->timer));
 
+  if(al_install_touch_input())
+    al_register_event_source(_internal->queue, al_get_touch_input_event_source());
 
   // temporary map creation
   _internal->world_instance = std::make_unique<world>();
@@ -147,6 +150,7 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
       }
       redraw = true;
       _internal->execute_event(event, net);
+      _internal->hud->execute_event(event);
       break;
 
     // handle keys pressure
@@ -160,6 +164,9 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
       break;
     case ALLEGRO_EVENT_DISPLAY_CLOSE:
       done = true;
+      break;
+    default:
+      _internal->hud->execute_event(event);
       break;
     }
 

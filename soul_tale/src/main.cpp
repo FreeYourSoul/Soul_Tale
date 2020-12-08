@@ -45,10 +45,13 @@ int main(int ac, char** av) {
   }
 
   al_install_keyboard();
+  al_install_mouse();
   al_init_font_addon();
   al_init_ttf_addon();
   al_init_image_addon();
   al_init_primitives_addon();
+
+  al_set_app_name("Free Tales Online");
 
   al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
 
@@ -56,6 +59,7 @@ int main(int ac, char** av) {
   engine_manager.run("test", nullptr);
 
   al_uninstall_keyboard();
+  al_uninstall_mouse();
   al_shutdown_font_addon();
   al_shutdown_ttf_addon();
   al_shutdown_image_addon();

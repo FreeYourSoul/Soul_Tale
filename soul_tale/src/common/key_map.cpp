@@ -34,8 +34,8 @@ key_map key_map::from_config(const std::filesystem::path& path_to_config) {
   m.open_status = ALLEGRO_KEY_S;
   m.open_options = ALLEGRO_KEY_ESCAPE;
 
-  m.open_dev_terminal = ALLEGRO_KEY_T;
-  m.open_perf_monitor = ALLEGRO_KEY_P;
+  m.open_dev_terminal = ALLEGRO_KEY_F9;
+  m.open_perf_monitor = ALLEGRO_KEY_F10;
 
   m.move_down = ALLEGRO_KEY_DOWN;
   m.move_up = ALLEGRO_KEY_UP;
