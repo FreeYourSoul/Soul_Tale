@@ -23,9 +23,8 @@
 
 #include <functional>
 
+#include <allegro5/allegro5.h>
 #include <spdlog/spdlog.h>
-
-#include <widgetz/widgetz.h>
 
 #include <common/game_context.hh>
 #include <hud/hud_manager.hh>

@@ -33,6 +33,7 @@ class terminal {
 
 public:
   ~terminal();
+  terminal() = default;
   explicit terminal(ALLEGRO_EVENT_QUEUE* event_queue);
 
   void execute_event(ALLEGRO_EVENT event);

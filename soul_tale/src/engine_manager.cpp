@@ -25,8 +25,7 @@
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
-
-#include <widgetz/widgetz.h>
+#include <allegro5/transformations.h>
 
 #include <common/game_context.hh>
 #include <common/option_config.hh>
@@ -43,6 +42,15 @@ void check_instantiation(void* ptr, const std::string& component) {
     SPDLOG_ERROR("An error occurred at {}\n", component);
     throw std::runtime_error(component);
   }
+}
+
+bool is_mouse_event(ALLEGRO_EVENT event) {
+  return event.type == ALLEGRO_EVENT_MOUSE_AXES
+      || event.type == ALLEGRO_EVENT_MOUSE_ENTER_DISPLAY
+      || event.type == ALLEGRO_EVENT_MOUSE_LEAVE_DISPLAY
+      || event.type == ALLEGRO_EVENT_MOUSE_WARPED
+      || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN
+      || event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP;
 }
 
 //
@@ -126,7 +134,7 @@ engine_manager::engine_manager() : _internal(std::make_unique<internal>()) {
   al_register_event_source(_internal->queue, al_get_display_event_source(_internal->disp));
   al_register_event_source(_internal->queue, al_get_timer_event_source(_internal->timer));
 
-  if(al_install_touch_input())
+  if (al_install_touch_input())
     al_register_event_source(_internal->queue, al_get_touch_input_event_source());
 
   // temporary map creation
@@ -156,7 +164,6 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
     // handle keys pressure
     case ALLEGRO_EVENT_KEY_DOWN:
       key[event.keyboard.keycode] = KEY_SEEN | KEY_RELEASED;
-      // execute event on the current screen manager
       _internal->hud->execute_event(event);
       break;
     case ALLEGRO_EVENT_KEY_UP:
@@ -166,6 +173,10 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
       done = true;
       break;
     default:
+      if (is_mouse_event(event)) {
+        event.mouse.x = int(float(event.mouse.x) / game_context::get()._ratio);
+        event.mouse.y = int(float(event.mouse.y) / game_context::get()._ratio);
+      }
       _internal->hud->execute_event(event);
       break;
     }

@@ -25,19 +25,13 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_ttf.h>
 
 #include <allegro_tmx/allegro_tmx.hh>
 #include <engine_manager.hh>
 
-
-//static constexpr std::uint32_t DISP_W = 620;
-//static constexpr std::uint32_t DISP_H = 480;
-//
-//static constexpr int KEY_SEEN = 1;
-//static constexpr int KEY_RELEASED = 2;
-
-int main(int ac, char** av) {
+int main() {
 
   if (!al_init()) {
     std::cerr << "An error occurred at init\n";
@@ -50,6 +44,7 @@ int main(int ac, char** av) {
   al_init_ttf_addon();
   al_init_image_addon();
   al_init_primitives_addon();
+  al_init_native_dialog_addon();
 
   al_set_app_name("Free Tales Online");
 
@@ -61,9 +56,8 @@ int main(int ac, char** av) {
   al_uninstall_keyboard();
   al_uninstall_mouse();
   al_shutdown_font_addon();
-  al_shutdown_ttf_addon();
   al_shutdown_image_addon();
   al_shutdown_primitives_addon();
-
+  al_shutdown_native_dialog_addon();
   return 0;
 }

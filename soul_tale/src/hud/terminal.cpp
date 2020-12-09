@@ -21,8 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <ranges>
-#include <stack>
+#include <allegro5/allegro_native_dialog.h>
 
 #include <common/game_context.hh>
 #include <spdlog/spdlog.h>
@@ -45,6 +44,7 @@ namespace fys::st::hud {
 
 struct terminal::internal {
   WZ_WIDGET* widget = nullptr;
+  WZ_TEXTBOX* terminal = nullptr;
   WZ_WIDGET* cml = nullptr;
   ALLEGRO_FONT* font = nullptr;
 
@@ -60,6 +60,8 @@ struct terminal::internal {
 
   //! index at which an overwrite of the terminal will occurs
   std::optional<std::uint32_t> overwrite_index;
+
+  bool refresh_text = false;
 
   std::string make_terminal_print() {
     std::string result;
@@ -86,10 +88,13 @@ struct terminal::internal {
           }
         },
         TERM_MAX_WIDTH);
+    refresh_text = true;
   }
 };
 
 terminal::~terminal() {
+  wz_destroy(_intern->cml);
+  wz_destroy((WZ_WIDGET*)_intern->terminal);
   wz_destroy(_intern->widget);
   al_destroy_font(_intern->font);
 };
@@ -109,52 +114,43 @@ terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<
 
   wz_set_theme(_intern->widget, (WZ_THEME*)&_intern->theme);
 
-  wz_create_fill_layout(_intern->widget, 50, 50* 2, 300* 2, 450* 2, 50, 20, WZ_ALIGN_CENTRE, WZ_ALIGN_TOP, -1);
-  wz_create_textbox(_intern->widget, 0, 0, 200* 2, 50* 2, WZ_ALIGN_CENTRE, WZ_ALIGN_CENTRE, al_ustr_new("Welcome to WidgetZ!"), 1, -1);
-  wz_create_toggle_button(_intern->widget, 0, 0, 200* 2, 50* 2, al_ustr_new("Toggle 1"), 1, 1, 5);
-  wz_create_toggle_button(_intern->widget, 0, 0, 200* 2, 50* 2, al_ustr_new("Toggle 2"), 1, 1, 6);
-  wz_create_toggle_button(_intern->widget, 0, 0, 200* 2, 50* 2, al_ustr_new("Toggle 3"), 1, 1, 7);
-  wz_create_button(_intern->widget, 0, 0, 200* 2, 50* 2, al_ustr_new("Switch Themes"), 1, 666);
-  auto* wgt = (WZ_WIDGET*)wz_create_button(_intern->widget, 0, 0, 200, 50, al_ustr_new("Quit"), 1, 1);
-  wz_create_fill_layout(_intern->widget, 350 * 2, 50* 2, 300* 2, 450* 2, 50, 20, WZ_ALIGN_CENTRE, WZ_ALIGN_TOP, -1);
-  wz_create_textbox(_intern->widget, 0, 0, 200* 2, 50* 2, WZ_ALIGN_CENTRE, WZ_ALIGN_CENTRE, al_ustr_new("Scroll Bars:"), 1, -1);
-  wz_create_scroll(_intern->widget, 0, 0, 200, 20, 20, 50, 9);
-  wz_create_scroll(_intern->widget, 0, 0, 20, 200, 20, 50, 9);
-  wz_create_scroll(_intern->widget, 0, 0, 20, 200, 20, 50, 9);
-  wz_create_fill_layout(_intern->widget, 650* 2, 50* 2, 300* 2, 450* 2, 20, 20, WZ_ALIGN_CENTRE, WZ_ALIGN_TOP, -1);
-  wz_create_textbox(_intern->widget, 0, 0, 200* 2, 50* 2, WZ_ALIGN_CENTRE, WZ_ALIGN_CENTRE, al_ustr_new("Edit Box:"), 1, -1);
-  wgt = (WZ_WIDGET*)wz_create_editbox(_intern->widget, 0, 0, 200* 2, 50* 2, al_ustr_new("Type here..."), 1, -1);
-  wz_create_textbox(_intern->widget, 0, 0, 200* 2, 50* 2, WZ_ALIGN_LEFT, WZ_ALIGN_TOP, al_ustr_new("A textbox with a lot of text"
-                                                                                             " in it. Also supports new lines:\n\nNew paragraph.\n"
-                                                                                             "Also supports unicode:\n\n"
-                                                                                             "Привет"),
-                    1, -1);
+  wz_create_fill_layout(
+      _intern->widget,
+      0, 0, float(ctx._display_x), 100,
+      0, 0, WZ_ALIGN_CENTRE, WZ_ALIGN_CENTRE, -1);
 
-//  wz_create_fill_layout(
-//      _intern->widget,
-//      0, 0,
-//      float(ctx._display_x), float(ctx._display_y) + 130.f,
-//      20, 20, WZ_ALIGN_LEFT, WZ_ALIGN_TOP, -1);
-//
-//  wz_create_textbox(
-//      _intern->widget,
-//      0, 0,
-//      float(ctx._display_x), float(ctx._display_y),
-//      WZ_ALIGN_LEFT,
-//      WZ_ALIGN_TOP,
-//      al_ustr_new(_intern->make_terminal_print().c_str()), 1, -1);
-//
-//  _intern->cml = (WZ_WIDGET*)wz_create_editbox(
-//      _intern->widget,
-//      0, 0,
-//      float(ctx._display_x) - 40, 70,
-//      al_ustr_new("Type here..........................................................."), 1, 42);
+  _intern->cml = (WZ_WIDGET*)wz_create_editbox(
+      _intern->widget,
+      0, 0,
+      float(ctx._display_x) - 120, 80,
+      al_ustr_new(""), 1, 42);
+
+  WZ_BUTTON* send = wz_create_button(_intern->widget, 0, 0, 80, 80, al_ustr_new("SEND"), 1, 666);
+  wz_set_shortcut(reinterpret_cast<WZ_WIDGET*>(send), ALLEGRO_KEY_ENTER, 0);
+
+  wz_create_fill_layout(
+      _intern->widget,
+      0, 100,
+      float(ctx._display_x), float(ctx._display_y) + 130.f,
+      20, 20, WZ_ALIGN_LEFT, WZ_ALIGN_TOP, -1);
+
+  _intern->terminal = wz_create_textbox(
+      _intern->widget,
+      0, 0,
+      float(ctx._display_x), float(ctx._display_y),
+      WZ_ALIGN_LEFT,
+      WZ_ALIGN_TOP,
+      al_ustr_new(_intern->make_terminal_print().c_str()), 1, -1);
 
   wz_register_sources(_intern->widget, event_queue);
 }
 
 void terminal::render() {
   wz_update(_intern->widget, config::refresh_rate);
+  if (_intern->refresh_text) {
+    al_ustr_free(_intern->terminal->text);
+    _intern->terminal->text = al_ustr_new(_intern->make_terminal_print().c_str());
+  }
   wz_draw(_intern->widget);
 }
 
@@ -163,15 +159,20 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
   switch (event.type) {
   case WZ_BUTTON_PRESSED: {
     switch ((int)event.user.data1) {
-    case 1: {
-      SPDLOG_INFO("mmmmmouuuuuu");
-      break;
-    }
     case 666: {
-      SPDLOG_INFO("ooooo it's here");
-    }
-    }
+      auto* edit_box_content = ((WZ_EDITBOX*)_intern->cml);
+      std::string command = std::string((char*)edit_box_content->text->data, edit_box_content->text->slen);
 
+      // execute command
+
+      // print in terminal
+      _intern->print_in_terminal(std::string("$>").append(command));
+
+      // refresh command line
+      al_ustr_free(edit_box_content->text);
+      edit_box_content->text = al_ustr_new("");
+    }
+    }
     break;
   }
   }
