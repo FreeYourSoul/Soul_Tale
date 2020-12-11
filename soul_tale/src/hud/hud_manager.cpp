@@ -34,26 +34,24 @@ namespace fys::st::hud {
 
 struct hud_manager::internal {
 
-  explicit internal(ALLEGRO_EVENT_QUEUE* event_queue)
-      : terminal_hud(event_queue) {
+  explicit internal(ALLEGRO_EVENT_QUEUE* event_queue) {
 
+    auto& instance = terminal::get_instance(event_queue);
     registered_hud = {
 
         // terminal hud
-        [this](std::optional<ALLEGRO_EVENT> event) mutable {
+        [this, &instance](std::optional<ALLEGRO_EVENT> event) mutable {
           if (terminal_enabled) {
             if (event.has_value()) {
-              terminal_hud.execute_event(event.value());
+              instance.execute_event(event.value());
             } else {
-              terminal_hud.render();
+              instance.render();
             }
           }
         },
 
     };
   }
-
-  hud::terminal terminal_hud;
 
   std::vector<std::function<void(std::optional<ALLEGRO_EVENT>)>> registered_hud;
 

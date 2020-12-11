@@ -38,6 +38,14 @@ constexpr std::uint32_t TERM_MAX_HISTORY = 200;
 std::uint32_t normalize(std::uint32_t index) {
   return index % TERM_MAX_HISTORY;
 }
+
+fil::command_line_interface make_cli() {
+  fil::command_line_interface cli([] {}, "FyS Online Command line tool");
+
+  cli.set_sub_command_only(true);
+  return cli;
+}
+
 }// namespace
 
 namespace fys::st::hud {
@@ -99,7 +107,7 @@ terminal::~terminal() {
   al_destroy_font(_intern->font);
 };
 
-terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<internal>()) {
+terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<internal>()), _cli(make_cli) {
   auto& ctx = game_context::get();
 
   _intern->font = al_load_font("/home/FyS/Project/Soul_Tale/asset/font/vera_mono.ttf", 30, 0);
@@ -176,6 +184,17 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
     break;
   }
   }
+}
+
+terminal& terminal::get_instance(ALLEGRO_EVENT_QUEUE* event_queue) {
+  if (_instance == nullptr) {
+    _instance.reset(new terminal(event_queue));
+  }
+  return *_instance;
+}
+
+void terminal::reset() {
+  _instance.reset(nullptr);
 }
 
 }// namespace fys::st::hud

@@ -24,27 +24,42 @@
 #ifndef SOUL_TALE_SOUL_TALE_SRC_HUD_TERMINAL_HH
 #define SOUL_TALE_SOUL_TALE_SRC_HUD_TERMINAL_HH
 
+#include <concepts>
+
 #include <widgetz/widgetz.h>
+
+#include <fil/cli/command_line_interface.hh>
 
 namespace fys::st::hud {
 
 class terminal {
   struct internal;
 
+  inline static std::unique_ptr<terminal> _instance = nullptr;
+
 public:
   ~terminal();
-  terminal() = default;
-  explicit terminal(ALLEGRO_EVENT_QUEUE* event_queue);
+
+  static terminal& get_instance(ALLEGRO_EVENT_QUEUE* event_queue);
+  static void reset();
+
+  template<std::invocable Handler>
+  static void add_command(std::string name_command, Handler&& handler, std::string help = "") {
+    assert(_instance != nullptr);
+    _instance->_cli.add_sub_command(fil::sub_command(std::move(name_command), std::forward<Handler>(handler), std::move(help)));
+  }
 
   void execute_event(ALLEGRO_EVENT event);
-
   void render();
 
 private:
-  std::unique_ptr<internal> _intern;
+  explicit terminal(ALLEGRO_EVENT_QUEUE* event_queue);
 
+private:
+  std::unique_ptr<internal> _intern;
+  fil::command_line_interface _cli;
 };
 
-}
+}// namespace fys::st::hud
 
 #endif//SOUL_TALE_SOUL_TALE_SRC_HUD_TERMINAL_HH
