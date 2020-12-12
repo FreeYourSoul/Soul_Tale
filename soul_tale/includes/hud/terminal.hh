@@ -42,6 +42,7 @@ public:
 
   static terminal& get_instance(ALLEGRO_EVENT_QUEUE* event_queue);
   static void reset();
+  static void add_to_terminal(const std::string& to_add);
 
   template<std::invocable Handler>
   static void add_command(std::string name_command, Handler&& handler, std::string help = "") {

@@ -169,12 +169,23 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
     switch ((int)event.user.data1) {
     case 666: {
       auto* edit_box_content = ((WZ_EDITBOX*)_intern->cml);
-      std::string command = std::string((char*)edit_box_content->text->data, edit_box_content->text->slen);
+      std::string command = std::string("$> ").append(std::string((char*)edit_box_content->text->data, edit_box_content->text->slen));
 
       // execute command
+      std::vector<char*> ac{};
+      fil::split_string(command, " ", [&ac](const std::string& s) { ac.emplace_back(const_cast<char*>(s.c_str())); });
 
-      // print in terminal
-      _intern->print_in_terminal(std::string("$>").append(command));
+      _intern->print_in_terminal(command);
+      if (!ac.empty()) {
+        SPDLOG_INFO("enter {}", ac[0]);
+        bool action = false;
+        try {
+          action = _cli.parse_command_line(ac.size(), &ac[0]);
+        } catch (...) {}
+        if (!action) {
+          _intern->print_in_terminal(fmt::format("...{} : command not found", command));
+        }
+      }
 
       // refresh command line
       al_ustr_free(edit_box_content->text);
@@ -195,6 +206,10 @@ terminal& terminal::get_instance(ALLEGRO_EVENT_QUEUE* event_queue) {
 
 void terminal::reset() {
   _instance.reset(nullptr);
+}
+
+void terminal::add_to_terminal(const std::string& to_add) {
+  _instance->_intern->print_in_terminal(to_add);
 }
 
 }// namespace fys::st::hud

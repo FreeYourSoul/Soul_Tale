@@ -22,6 +22,7 @@
 // SOFTWARE.
 
 #include <allegro_tmx/allegro_tmx.hh>
+#include <spdlog/spdlog.h>
 
 #include <common/game_context.hh>
 #include <in-world/world.hh>
@@ -52,6 +53,13 @@ struct world::internal {
   //! character x world pos
   tmx::Vector2<double> pos{38., 60.};
 
+  void add_terminal_command() {
+    hud::terminal::add_command("position", [this](){
+      SPDLOG_INFO("character position x: {}, y: {}", pos.x, pos.y);
+      hud::terminal::add_to_terminal(fmt::format("character position x: {}, y: {}", pos.x, pos.y));
+    });
+  }
+
 };
 
 world::~world() = default;
@@ -63,6 +71,7 @@ world::world() : _intern(std::make_unique<internal>()) {
                             game_context::get().disp_x(),
                             game_context::get().disp_y(),
                             game_context::get().ratio());
+  _intern->add_terminal_command();
 }
 
 void world::render() {
