@@ -21,6 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <algorithm>
+
 #include <allegro5/allegro_native_dialog.h>
 
 #include <common/game_context.hh>
@@ -172,12 +174,14 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
       std::string command = std::string("$> ").append(std::string((char*)edit_box_content->text->data, edit_box_content->text->slen));
 
       // execute command
-      std::vector<char*> ac{};
-      fil::split_string(command, " ", [&ac](const std::string& s) { ac.emplace_back(const_cast<char*>(s.c_str())); });
+      std::vector<std::string> ac_str{};
+      fil::split_string(command, " ", [&ac_str](std::string s) { ac_str.emplace_back(std::move(s)); });
+      std::vector<char*> ac;
+      ac.reserve(ac_str.size());
+      std::transform(ac_str.begin(), ac_str.end(), std::back_inserter(ac), [](const std::string& str) { return const_cast<char*>(str.c_str()); });
 
       _intern->print_in_terminal(command);
       if (!ac.empty()) {
-        SPDLOG_INFO("enter {}", ac[0]);
         bool action = false;
         try {
           action = _cli.parse_command_line(ac.size(), &ac[0]);
