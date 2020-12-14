@@ -54,12 +54,11 @@ struct world::internal {
   tmx::Vector2<double> pos{38., 60.};
 
   void add_terminal_command() {
-    hud::terminal::add_command("position", [this](){
+    hud::terminal::add_command("position", [this]() {
       SPDLOG_INFO("character position x: {}, y: {}", pos.x, pos.y);
       hud::terminal::add_to_terminal(fmt::format("character position x: {}, y: {}", pos.x, pos.y));
     });
   }
-
 };
 
 world::~world() = default;
@@ -76,8 +75,6 @@ world::world() : _intern(std::make_unique<internal>()) {
 
 void world::render() {
   auto& map = _intern->map.at(_intern->current);
-  //  auto& position_mapping = _intern->position_mapping.at(_intern->current);
-
   map.render(float(_intern->pos.x), float(_intern->pos.y));
 }
 
@@ -87,15 +84,20 @@ void world::execute_event(std::shared_ptr<network_manager>& net) {
 
   if (key[km.move_up]) {
     _intern->pos.y -= .100;
+    if (_intern->pos.y < 0.) {
+      _intern->pos.y = 0.;
+    }
   } else if (key[km.move_down]) {
     _intern->pos.y += .100;
   }
   if (key[km.move_left]) {
     _intern->pos.x -= .100;
+    if (_intern->pos.x < 0.) {
+      _intern->pos.x = 0.;
+    }
   } else if (key[km.move_right]) {
     _intern->pos.x += .100;
   }
 }
-
 
 }// namespace fys::st

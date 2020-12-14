@@ -178,7 +178,7 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
       fil::split_string(command, " ", [&ac_str](std::string s) { ac_str.emplace_back(std::move(s)); });
       std::vector<char*> ac;
       ac.reserve(ac_str.size());
-      std::transform(ac_str.begin(), ac_str.end(), std::back_inserter(ac), [](const std::string& str) { return const_cast<char*>(str.c_str()); });
+      std::ranges::transform(ac_str, std::back_inserter(ac), [](const std::string& str) { return const_cast<char*>(str.c_str()); });
 
       _intern->print_in_terminal(command);
       if (!ac.empty()) {
@@ -187,7 +187,7 @@ void terminal::execute_event(ALLEGRO_EVENT event) {
           action = _cli.parse_command_line(ac.size(), &ac[0]);
         } catch (...) {}
         if (!action) {
-          _intern->print_in_terminal(fmt::format("...{} : command not found", command));
+          _intern->print_in_terminal("... : wrong command");
         }
       }
 

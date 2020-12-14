@@ -38,6 +38,12 @@
 
 #include <allegro5/allegro5.h>
 
+namespace {
+float rounding_to_one_decimal(float to_round) {
+  return ::roundf(to_round * 10.f) / 10.f;
+}
+}// namespace
+
 namespace allegro_tmx {
 
 //! Transformation flag to apply on sprites
@@ -157,6 +163,7 @@ public:
   bool operator>(const sprite_sheet& other) const { return _last_gid > other._last_gid; }
 
   void render(std::uint32_t id_tile, float x, float y, const tmx::Vector2i& offset) const {
+
     al_draw_bitmap(_sprites.at(id_tile), x * _tile_size.x + offset.x, y * _tile_size.y + offset.y, 0);
 
     // Tinting (night style ?)
@@ -226,16 +233,25 @@ public:
   map_displayer& operator=(const map_displayer&) = delete;
 
   [[nodiscard]] tmx::Vector2i make_offset(float to_disp_x, float to_disp_y, const tmx::Vector2i& layer_offset) const {
-    std::uint32_t x_positional_offset = (to_disp_x - static_cast<std::uint32_t>(to_disp_x)) * 100.000f;
-    std::uint32_t y_positional_offset = (to_disp_y - static_cast<std::uint32_t>(to_disp_y)) * 100.000f;
+    double intpart;
+
+//    std::int64_t x_positional_offset = rounding_to_one_decimal(::modf(to_disp_x, &intpart)) * _tile_size.x;
+//    std::int64_t y_positional_offset = rounding_to_one_decimal(::modf(to_disp_y, &intpart)) * _tile_size.y;
+
+    std::uint32_t x_positional_offset = 0;
+    std::uint32_t y_positional_offset = 0;
 
     // Dirty fix of the imprecision..
-    if (x_positional_offset == 9) {
-      x_positional_offset = 10;
-    }
-    if (y_positional_offset == 9) {
-      y_positional_offset = 10;
-    }
+    //    if (x_positional_offset >= _tile_size.x) {
+    //      x_positional_offset = 0;
+    //    }
+    //    if (y_positional_offset >= _tile_size.y) {
+    //      y_positional_offset = 0;
+    //    }
+
+    std::cout << "\n_tile_size.x >> " << _tile_size.x << "  _tile_size.y >> " << _tile_size.y
+              << "\nto_disp_x >> " << to_disp_x << "  to_disp_y >> " << to_disp_y
+              << "\nx >> " << x_positional_offset << "  y >> " << y_positional_offset << "\n";
     return tmx::Vector2i(layer_offset.x - x_positional_offset, layer_offset.y - y_positional_offset);
   }
 
@@ -243,11 +259,11 @@ public:
     float to_display_x = position_x - std::midpoint(0.f, float(_screen_tile.x));
     float to_display_y = position_y - std::midpoint(0.f, float(_screen_tile.y));
 
-    if (to_display_x < .0) {
-      to_display_x = .0;
+    if (to_display_x < .0f) {
+      to_display_x = .0f;
     }
-    if (to_display_y < .0) {
-      to_display_y = .0;
+    if (to_display_y < .0f) {
+      to_display_y = .0f;
     }
 
     // enable hold to optimize drawing on the multiple sub bitmap deriving the tilesets
@@ -262,7 +278,7 @@ public:
 
           if (auto tile_to_render = layer.tile_to_render({std::uint32_t(to_display_x) + x, std::uint32_t(to_display_y) + y});
               tile_to_render.has_value() && tile_to_render.value() > 0) {
-            const auto tile_id = tile_to_render.value();
+            const std::uint32_t tile_id = tile_to_render.value();
             _tilesets.get(tile_id)->second.render(
                 tile_id, x, y, make_offset(to_display_x, to_display_y, layer.get_offset()));
           }
