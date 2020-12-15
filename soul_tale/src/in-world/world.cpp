@@ -37,6 +37,9 @@ struct mapping_map {
         && pos_y <= influence.top && pos_y <= (influence.top + influence.height);
   }
 };
+double round_decimal(double to_floor) {
+  return ::roundf(to_floor * 10.) / 10.;
+}
 }// namespace
 
 namespace fys::st {
@@ -83,20 +86,20 @@ void world::execute_event(std::shared_ptr<network_manager>& net) {
   auto& km = game_context::get().get_key_map();
 
   if (key[km.move_up]) {
-    _intern->pos.y -= .100;
+    _intern->pos.y = round_decimal(_intern->pos.y - .100);
     if (_intern->pos.y < 0.) {
       _intern->pos.y = 0.;
     }
   } else if (key[km.move_down]) {
-    _intern->pos.y += .100;
+    _intern->pos.y = round_decimal(_intern->pos.y + .100);
   }
   if (key[km.move_left]) {
-    _intern->pos.x -= .100;
+    _intern->pos.x = round_decimal(_intern->pos.x - .100);
     if (_intern->pos.x < 0.) {
       _intern->pos.x = 0.;
     }
   } else if (key[km.move_right]) {
-    _intern->pos.x += .100;
+    _intern->pos.x = round_decimal(_intern->pos.x + .100);
   }
 }
 
