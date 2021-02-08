@@ -26,6 +26,8 @@
 
 namespace fys::st {
 
+// Should entity using the visitor pattern instead of a inheritance based one ? could be fun exploring
+
 class entity_manager {
 };
 
