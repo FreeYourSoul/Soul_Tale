@@ -24,10 +24,11 @@
 #ifndef SOUL_TALE_ALLEGRO_TMX_INCLUDE_ALLEGRO_TMX_ALLEGRO_TMX_HH
 #define SOUL_TALE_ALLEGRO_TMX_INCLUDE_ALLEGRO_TMX_ALLEGRO_TMX_HH
 
+#include <numeric>
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
-#include <numeric>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -39,7 +40,7 @@
 #include <allegro5/allegro5.h>
 
 namespace {
-float rounding_to_one_decimal(float to_round) {
+float rounding_to_one_decimal(double to_round) {
   return ::roundf(to_round * 10.f) / 10.f;
 }
 }// namespace
@@ -233,21 +234,24 @@ public:
   map_displayer& operator=(const map_displayer&) = delete;
 
   [[nodiscard]] tmx::Vector2i make_offset(float to_disp_x, float to_disp_y, const tmx::Vector2i& layer_offset) const {
-    double intpart;
+    double intpart, intpart2;
 
-//    std::int64_t x_positional_offset = rounding_to_one_decimal(::modf(to_disp_x, &intpart)) * _tile_size.x;
-//    std::int64_t y_positional_offset = rounding_to_one_decimal(::modf(to_disp_y, &intpart)) * _tile_size.y;
+    std::int64_t x_positional_offset = std::round(::modf(to_disp_x, &intpart) * _tile_size.x);
+    x_positional_offset += std::int64_t(intpart) % _tile_size.x;
 
-    std::uint32_t x_positional_offset = 0;
-    std::uint32_t y_positional_offset = 0;
+    std::int64_t y_positional_offset = std::round(::modf(to_disp_y, &intpart2) * _tile_size.y);
+    x_positional_offset += std::int64_t(intpart2) % _tile_size.y;
+
+//    std::uint32_t x_positional_offset = 0;
+//    std::uint32_t y_positional_offset = 0;
 
     // Dirty fix of the imprecision..
-    //    if (x_positional_offset >= _tile_size.x) {
-    //      x_positional_offset = 0;
-    //    }
-    //    if (y_positional_offset >= _tile_size.y) {
-    //      y_positional_offset = 0;
-    //    }
+//    if (x_positional_offset >= _tile_size.x) {
+//      x_positional_offset -= _tile_size.x;
+//    }
+//    if (y_positional_offset >= _tile_size.y) {
+//      y_positional_offset -= _tile_size.y;
+//    }
 
     std::cout << "\n_tile_size.x >> " << _tile_size.x << "  _tile_size.y >> " << _tile_size.y
               << "\nto_disp_x >> " << to_disp_x << "  to_disp_y >> " << to_disp_y

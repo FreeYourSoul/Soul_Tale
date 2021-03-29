@@ -6,7 +6,7 @@ stdenv.mkDerivation rec {
 
   src = builtins.fetchGit {
     url = "https://github.com/fallahn/tmxlite.git";
-    rev = "8aea23ea52a72f82931d950d878bbb1b946c99c0";
+    rev = "849bcd9d6f8418f975a8a2257dc924c36fa91cfc";
   };
   sourceRoot = "source/tmxlite";
 

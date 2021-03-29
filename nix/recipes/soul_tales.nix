@@ -1,37 +1,39 @@
-{ pkgs ? import <nixpkgs> { }, use_revision ? builtins.getEnv "NIX_SOUL_TALES_REVISION"
-, spdlog, zeromq, flatbuffers, flatcc, fmt, allegro5, fil, nlohmann_json, tmxlite, cppzmq}: rec {
-  version = "1.0.0-DEV";
+{ stdenv, lib, nix-gitignore, use_revision ? builtins.getEnv "NIX_SOUL_TALES_REVISION"
+, spdlog, pkgconfig, widgetz, zeromq, pngpp, fmt, allegro5, fil, nlohmann_json, tmxlite, cppzmq, cmake, catch2 }:
+
+stdenv.mkDerivation rec {
+  version = "0.0.1-DEV";
 
   pname = "soul_tale";
 
-  src = if (builtins.isNull use_revision || use_revision == "") then
-    pkgs.nix-gitignore.gitignoreSource [ ".git" ] ./../..
-  else
-    builtins.fetchGit {
-      url = "https://github.com/FreeYourSoul/Soul_Tale.git";
-      rev = use_revision;
-    };
+  src = nix-gitignore.gitignoreSource [ ".git" ] ./../..;
+
+#if (builtins.isNull use_revision || use_revision == "") then
+    
+  #else
+   # builtins.fetchGit {
+    #  url = "https://github.com/FreeYourSoul/Soul_Tale.git";
+    #  rev = use_revision;
+    #};
 
     buildInputs = [
+      cmake
       zeromq
       allegro5
-      flatcc
+      widgetz
+      fil
       cppzmq
-      flatbuffers
       spdlog
+      pngpp
       fmt
       nlohmann_json
+      catch2
       tmxlite
     ];
 
-  qb = {
-    email = "ballandFyS@protonmail.com";
-    github = "FreeYourSoul";
-    githubId = 11722712;
-    name = "Quentin Balland";
-  };
-  meta = with pkgs.stdenv.lib; {
-    maintainers = [ qb ];
+nativeBuildInputs = [ cmake pkgconfig ];
+
+  meta = with lib; {
     homepage = "http://freeyoursoul.online";
     description = "Allegro Client for FyS Online (Soul Tales MMORPG)";
     licences = licenses.mit;

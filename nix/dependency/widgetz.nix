@@ -9,7 +9,7 @@ stdenv.mkDerivation rec {
     rev = "5fe5fd67ef4c1a87a5eb6fefc1aa8d0c54a7d3e6";
     };
 
-    buildInputs = [ cmake, allegro5, freetype ];
+    buildInputs = [ cmake allegro5 freetype ];
 
     cmakeFlags = [ "-DCPPZMQ_BUILD_TESTS=OFF" ];
 

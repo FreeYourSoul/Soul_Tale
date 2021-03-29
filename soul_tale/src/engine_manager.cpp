@@ -187,6 +187,7 @@ void engine_manager::run(const std::string& user_name, std::shared_ptr<network_m
       al_flip_display();
       redraw = false;
     }
+    al_rest(0);
   }
 }
 

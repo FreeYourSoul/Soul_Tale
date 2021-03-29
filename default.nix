@@ -5,7 +5,7 @@ in with pkgs; rec {
 
   # External Dependencies (personal)
   fil = (callPackage (builtins.fetchurl
-    "https://raw.githubusercontent.com/FreeYourSoul/FiL/9a38ffe32a7cd709efe56bf7f05255259acb95a0/fil-recipee.nix") {
+      "https://raw.githubusercontent.com/FreeYourSoul/FiL/d0a29fb955f513799696e29154a8b9c09c7e718e/fil-recipee.nix") {
       rev = "9a38ffe32a7cd709efe56bf7f05255259acb95a0";
     });
 
@@ -13,9 +13,10 @@ in with pkgs; rec {
   nlohmann_json = (callPackage ./nix/dependency/nlohmann_json.nix) { };
   tmxlite = (callPackage ./nix/dependency/tmxlite.nix) { };
   cppzmq = (callPackage ./nix/dependency/cppzmq.nix) { };
+  widgetz = (callPackage ./nix/dependency/widgetz.nix) { };
 
   # Soul_Tale Dependencies
-  soul_tale = (callPackage ./nix/recipes/soul_tale.nix) {
-    inherit stdenv fil nlohmann_json tmxlite cppzmq;
+  soul_tale = (callPackage ./nix/recipes/soul_tales.nix) {
+    inherit  fil nlohmann_json tmxlite cppzmq widgetz;
   };
 }

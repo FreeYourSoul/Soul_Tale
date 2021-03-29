@@ -52,8 +52,13 @@ target_link_libraries(Soul_Tale PRIVATE
         ${ALLEGRO_TTF_LIBRARIES}
         ${ALLEGRO_FONT_LIBRARIES}
         ${ALLEGRO_PRIMITIVES_LIBRARIES}
+        ${TMXLITE_LIBRARIES}
+        spdlog::spdlog
         fmt::fmt
         widgetz
         fys::allegro_tmx)
 target_compile_features(Soul_Tale PRIVATE cxx_std_20)
+
+install(TARGETS Soul_Tale DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 
