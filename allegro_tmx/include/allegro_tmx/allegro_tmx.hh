@@ -252,10 +252,10 @@ public:
 //    if (y_positional_offset >= _tile_size.y) {
 //      y_positional_offset -= _tile_size.y;
 //    }
-
-    std::cout << "\n_tile_size.x >> " << _tile_size.x << "  _tile_size.y >> " << _tile_size.y
-              << "\nto_disp_x >> " << to_disp_x << "  to_disp_y >> " << to_disp_y
-              << "\nx >> " << x_positional_offset << "  y >> " << y_positional_offset << "\n";
+//
+//    std::cout << "\n_tile_size.x >> " << _tile_size.x << "  _tile_size.y >> " << _tile_size.y
+//              << "\nto_disp_x >> " << to_disp_x << "  to_disp_y >> " << to_disp_y
+//              << "\nx >> " << x_positional_offset << "  y >> " << y_positional_offset << "\n";
     return tmx::Vector2i(layer_offset.x - x_positional_offset, layer_offset.y - y_positional_offset);
   }
 

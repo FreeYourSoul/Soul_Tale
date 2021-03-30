@@ -21,8 +21,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <numeric>
 #include <algorithm>
+#include <numeric>
 
 #include <allegro5/allegro_native_dialog.h>
 
@@ -125,25 +125,20 @@ terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<
 
   wz_set_theme(_intern->widget, (WZ_THEME*)&_intern->theme);
 
-  wz_create_fill_layout(
-      _intern->widget,
-      0, 0, float(ctx._display_x), 100,
-      0, 0, WZ_ALIGN_CENTRE, WZ_ALIGN_CENTRE, -1);
-
   _intern->cml = (WZ_WIDGET*)wz_create_editbox(
       _intern->widget,
       0, 0,
-      float(ctx._display_x) - 120, 80,
+      float(ctx._display_x), 80,
       al_ustr_new(""), 1, 42);
 
-  WZ_BUTTON* send = wz_create_button(_intern->widget, 0, 0, 80, 80, al_ustr_new("SEND"), 1, 666);
+  WZ_BUTTON* send = wz_create_button(_intern->widget, float(ctx._display_x) - 80, 0, 80, 80, al_ustr_new("SEND"), 1, 666);
   wz_set_shortcut(reinterpret_cast<WZ_WIDGET*>(send), ALLEGRO_KEY_ENTER, 0);
 
   wz_create_fill_layout(
       _intern->widget,
-      0, 100,
-      float(ctx._display_x), float(ctx._display_y) + 130.f,
-      20, 20, WZ_ALIGN_LEFT, WZ_ALIGN_TOP, -1);
+      0, 80,
+      float(ctx._display_x), float(ctx._display_y),
+      0, 0, WZ_ALIGN_LEFT, WZ_ALIGN_TOP, -1);
 
   _intern->terminal = wz_create_textbox(
       _intern->widget,
@@ -151,7 +146,7 @@ terminal::terminal(ALLEGRO_EVENT_QUEUE* event_queue) : _intern(std::make_unique<
       float(ctx._display_x), float(ctx._display_y),
       WZ_ALIGN_LEFT,
       WZ_ALIGN_TOP,
-      al_ustr_new(_intern->make_terminal_print().c_str()), 1, -1);
+      al_ustr_new(_intern->make_terminal_print().c_str()), 0, -1);
 
   wz_register_sources(_intern->widget, event_queue);
 }
